@@ -1,29 +1,86 @@
 from embedder import embed_user_query
 from vectorstore import search_in_pinecone
 from llm import query_llm_with_context
+from typing import List
+
+
+# ============================================================
+# PHASE 1 — NEW: print_inspection_view
+#
+# WHY: Makes retrieval completely transparent.
+#      You can now see exactly WHICH chunks were retrieved,
+#      their chunk IDs, and their similarity scores —
+#      BEFORE the LLM generates its answer.
+#
+# This lets you diagnose:
+#   - RETRIEVAL FAILURE → correct chunk is NOT in the list
+#   - GENERATION FAILURE → correct chunk IS in the list
+#                          but the LLM still answered wrong
+# ============================================================
+def print_inspection_view(
+    query: str,
+    retrieval_results: List[dict],
+    answer: str
+):
+    """
+    Prints a full inspection view of the RAG pipeline:
+      1. The original query
+      2. Every retrieved chunk with its ID, score, and text
+      3. The final LLM answer
+    """
+
+    line = "=" * 60
+
+    # ── QUERY ────────────────────────────────────────────────
+    print(f"\n{line}")
+    print("QUERY")
+    print(line)
+    print(f"\n{query}\n")
+
+    # ── RETRIEVAL RESULTS ────────────────────────────────────
+    print(f"\n{line}")
+    print("RETRIEVAL RESULTS")
+    print(line)
+
+    for rank, result in enumerate(retrieval_results, start=1):
+        print(f"\nRank {rank}")
+        print(f"Chunk ID        : {result['id']}")
+        print(f"Similarity Score: {result['score']}")
+        print(f"\n{result['text']}")
+        print()
+
+    # ── FINAL ANSWER ─────────────────────────────────────────
+    print(f"\n{line}")
+    print("FINAL ANSWER")
+    print(line)
+    print(f"\n{answer}\n")
 
 
 def process_user_query(query: str):
 
-    print(f"\n🔍 Query: {query}\n")
-
-    # Embed the user's query to create a vector representation
-    print("🧠 Step 1: Embedding user query...")
+    # Step 1: Embed the user query into a 384-dim vector
+    print("\n🧠 Embedding query...")
     query_vector = embed_user_query(query)
 
-    # Search the vector DB to find top matching chunks related to the user's question
-    print("📌 Step 2: Searching Pinecone for relevant chunks...")
-    matched_chunks = search_in_pinecone(query_vector)
+    # Step 2: Search Pinecone — returns structured list of dicts
+    # PHASE 1 CHANGE: retrieval_results is now a list of dicts,
+    # not a plain string. Each dict has: id, score, text
+    print("📌 Searching Pinecone...")
+    retrieval_results = search_in_pinecone(query_vector)
 
-    # Send the user query and search results (query + context) to the LLM for generating response
-    print("🤖 Step 3: Sending query + context to LLM (llama3.2)...\n")
-    generated_response = query_llm_with_context(query, matched_chunks)
+    # Step 3: Build context string from structured results
+    # We join only the text fields to send to the LLM.
+    # The IDs and scores are kept for the inspection view.
+    context = "\n\n---\n\n".join(
+        result["text"] for result in retrieval_results
+    )
 
-    print("=" * 50)
-    print("💬 Answer:")
-    print("=" * 50)
-    print(generated_response)
-    print("=" * 50)
+    # Step 4: Send query + context to Ollama/llama3.2
+    print("🤖 Generating answer with LLM...")
+    answer = query_llm_with_context(query, context)
+
+    # Step 5: Print the full inspection view
+    print_inspection_view(query, retrieval_results, answer)
 
 
 if __name__ == "__main__":

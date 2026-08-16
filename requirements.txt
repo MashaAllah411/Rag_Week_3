@@ -3,3 +3,4 @@ sentence-transformers
 pinecone
 python-dotenv
 ollama
+rank-bm25

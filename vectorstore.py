@@ -38,12 +38,34 @@ def store_in_pinecone(
         index.upsert(vectors=batch, namespace=namespace)
 
 
+# ============================================================
+# PHASE 1 — CHANGED: search_in_pinecone now returns a
+# structured list of dicts instead of a plain joined string.
+#
+# WHY: So the caller (queryprocessor.py) can:
+#   1. Display chunk IDs and scores for debugging
+#   2. Build the context string itself
+#   3. Use chunk IDs for evaluation later (Phase 3)
+#
+# RETURN FORMAT:
+#   [
+#       {"id": "chunk_15", "score": 0.8123, "text": "..."},
+#       {"id": "chunk_8",  "score": 0.7642, "text": "..."},
+#   ]
+# ============================================================
 def search_in_pinecone(
     query_vector: List[float],
     top_k: int = 4,
     namespace: str = ""
-) -> str:
-    """Queries Pinecone with the given vector and returns top matching chunks as a single context string."""
+) -> List[dict]:
+    """
+    Queries Pinecone with the given vector.
+
+    Returns a structured list of dicts, each containing:
+      - id    : the chunk ID stored in Pinecone (e.g. "chunk_15")
+      - score : cosine similarity score (0.0 to 1.0)
+      - text  : the original chunk text
+    """
 
     results = index.query(
         vector=query_vector,
@@ -52,15 +74,13 @@ def search_in_pinecone(
         namespace=namespace
     )
 
-    print(f"   ✅ Found {len(results.matches)} matching chunks\n")
+    retrieval_results = []
 
-    matched_chunks = []
+    for match in results.matches:
+        retrieval_results.append({
+            "id":    match.id,
+            "score": round(match.score, 4),
+            "text":  match.metadata.get("text", "")
+        })
 
-    for i, match in enumerate(results.matches):
-        text = match.metadata.get("text", "")
-        score = round(match.score, 4)
-        print(f"   📄 Chunk {i+1} (score: {score}): {text[:80]}...")
-        matched_chunks.append(text)
-
-    # Join all matched chunks into a single context string for the LLM
-    return "\n\n---\n\n".join(matched_chunks)
+    return retrieval_results
