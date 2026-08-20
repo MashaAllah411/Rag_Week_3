@@ -4,3 +4,9 @@ pinecone
 python-dotenv
 ollama
 rank-bm25
+fastapi
+uvicorn[standard]
+python-multipart
+numpy
+pytesseract
+Pillow

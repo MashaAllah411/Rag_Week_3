@@ -23,17 +23,17 @@ def rewrite_query(original_query: str) -> str:
     Returns:
         The rewritten search query string.
     """
-    system_prompt = """You are a search query optimizer for an HR policy search engine.
+    system_prompt = """You are a search query optimizer for a document search engine.
 Your task is to rephrase the user's input into a single clear, complete, and search-optimized question.
 
 RULES:
 1. Output ONLY the rewritten search query. No intro, no explanation, no quotes.
 2. Do NOT answer the user's question.
-3. Preserve key HR terms and intent.
+3. Preserve key domain terms and user intent.
 4. Expand short keywords into full, meaningful search questions.
 
-Example Input: timing?
-Example Output: What are the official working hours and work timing policy for staff?
+Example Input: depreciation rate?
+Example Output: What is the schedule of depreciation rates for vehicles and parts?
 """
 
     try:

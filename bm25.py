@@ -45,7 +45,7 @@ from typing import List
 # We rebuild chunks from the PDF at import time.
 # This is fast (< 1 second) and ensures chunk IDs match Pinecone exactly.
 
-def _build_corpus(pdf_path: str = "./resources/HRPolicy.pdf"):
+def _build_corpus(pdf_path: str = "./resources/InsurancePolicy.pdf"):
     """
     Reads the PDF and chunks it — same logic as dataprocessor.py.
     Returns:

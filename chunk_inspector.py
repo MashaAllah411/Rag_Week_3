@@ -14,7 +14,7 @@ import os
 from pdfreader import read_pdf
 from chunker import chunk_pages
 
-PDF_PATH = "./resources/HRPolicy.pdf"
+PDF_PATH = "./resources/InsurancePolicy.pdf"
 OUTPUT_FILE = "chunk_map.txt"
 
 

@@ -1,7 +1,7 @@
 from pinecone import Pinecone
 import os
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Dict, Any
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,18 +14,28 @@ index = pinecone_client.Index(os.getenv("PINECONE_INDEX_NAME"))
 def store_in_pinecone(
     chunks: List[str],
     embeddings: List[List[float]],
-    namespace: str = ""
+    namespace: str = "",
+    metadata_list: List[Dict[str, Any]] = None
 ):
     vectors_to_upsert = []
 
     for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+        meta = {
+            "text": chunk,
+            "chunk_index": i
+        }
+        if metadata_list and i < len(metadata_list):
+            meta.update(metadata_list[i])
+
+        # Generate unique chunk ID based on document name, strategy, and index
+        doc_id = meta.get("document_name", "doc").replace(" ", "_")
+        strategy = meta.get("chunking_strategy", "default")
+        vector_id = f"{doc_id}_{strategy}_{i}"
+
         vector_data = {
-            "id": f"chunk_{i}",
+            "id": vector_id,
             "values": embedding,
-            "metadata": {
-                "text": chunk,
-                "chunk_index": i
-            }
+            "metadata": meta
         }
 
         vectors_to_upsert.append(vector_data)
@@ -38,40 +48,28 @@ def store_in_pinecone(
         index.upsert(vectors=batch, namespace=namespace)
 
 
-# ============================================================
-# PHASE 1 — CHANGED: search_in_pinecone now returns a
-# structured list of dicts instead of a plain joined string.
-#
-# WHY: So the caller (queryprocessor.py) can:
-#   1. Display chunk IDs and scores for debugging
-#   2. Build the context string itself
-#   3. Use chunk IDs for evaluation later (Phase 3)
-#
-# RETURN FORMAT:
-#   [
-#       {"id": "chunk_15", "score": 0.8123, "text": "..."},
-#       {"id": "chunk_8",  "score": 0.7642, "text": "..."},
-#   ]
-# ============================================================
 def search_in_pinecone(
     query_vector: List[float],
     top_k: int = 4,
-    namespace: str = ""
+    namespace: str = "",
+    filter: Dict[str, Any] = None
 ) -> List[dict]:
     """
-    Queries Pinecone with the given vector.
+    Queries Pinecone with the given vector, optionally applying metadata filters.
 
     Returns a structured list of dicts, each containing:
-      - id    : the chunk ID stored in Pinecone (e.g. "chunk_15")
+      - id    : the chunk ID stored in Pinecone
       - score : cosine similarity score (0.0 to 1.0)
       - text  : the original chunk text
+      - metadata: other key-value pairs
     """
 
     results = index.query(
         vector=query_vector,
         top_k=top_k,
         include_metadata=True,
-        namespace=namespace
+        namespace=namespace,
+        filter=filter
     )
 
     retrieval_results = []
@@ -80,7 +78,8 @@ def search_in_pinecone(
         retrieval_results.append({
             "id":    match.id,
             "score": round(match.score, 4),
-            "text":  match.metadata.get("text", "")
+            "text":  match.metadata.get("text", ""),
+            "metadata": match.metadata
         })
 
     return retrieval_results

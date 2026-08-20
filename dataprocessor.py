@@ -4,12 +4,12 @@ from embedder import embed_chunks
 from vectorstore import store_in_pinecone
 from typing import List
 
-pdf_path = "./resources/HRPolicy.pdf"
+pdf_path = "./resources/InsurancePolicy.pdf"
 
 def run():
     print("\n========== RAG PIPELINE STARTED ==========\n")
 
-    # Step 1: Read HR Policy PDF and extract text
+    # Step 1: Read Insurance Policy PDF and extract text
     pages = read_pdf(pdf_path)
 
 
