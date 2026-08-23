@@ -1,0 +1,154 @@
+{
+    "retriever": "Semantic Search",
+    "top_k": 3,
+    "num_questions": 10,
+    "hit_rate": 0.7,
+    "recall": 0.5,
+    "mrr": 0.45,
+    "per_question": [
+        {
+            "question": "What are the official working hours for GESCI staff?",
+            "relevant_chunks": [
+                "chunk_107"
+            ],
+            "retrieved_ids": [
+                "doc_default_108",
+                "chunk_107",
+                "doc_default_112"
+            ],
+            "hit": 1,
+            "recall": 1.0,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question": "Are flexible working hours a guaranteed right for employees?",
+            "relevant_chunks": [
+                "chunk_107",
+                "chunk_108"
+            ],
+            "retrieved_ids": [
+                "doc_default_109",
+                "chunk_108",
+                "doc_default_108"
+            ],
+            "hit": 1,
+            "recall": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question": "What is the annual leave entitlement for full-time staff?",
+            "relevant_chunks": [
+                "chunk_108",
+                "chunk_109"
+            ],
+            "retrieved_ids": [
+                "doc_default_109",
+                "chunk_108",
+                "doc_default_115"
+            ],
+            "hit": 1,
+            "recall": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question": "How many days of sick leave is a staff member entitled to?",
+            "relevant_chunks": [
+                "chunk_117",
+                "chunk_118"
+            ],
+            "retrieved_ids": [
+                "chunk_119",
+                "chunk_118",
+                "doc_default_121"
+            ],
+            "hit": 1,
+            "recall": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question": "What is the probationary period for new staff members?",
+            "relevant_chunks": [
+                "chunk_67"
+            ],
+            "retrieved_ids": [
+                "doc_default_68",
+                "chunk_68",
+                "doc_default_67"
+            ],
+            "hit": 0,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question": "How long is the maternity leave entitlement?",
+            "relevant_chunks": [
+                "chunk_124",
+                "chunk_125"
+            ],
+            "retrieved_ids": [
+                "chunk_126",
+                "chunk_125",
+                "doc_default_128"
+            ],
+            "hit": 1,
+            "recall": 0.5,
+            "reciprocal_rank": 0.5
+        },
+        {
+            "question": "How many weeks notice must a staff member give when resigning?",
+            "relevant_chunks": [
+                "chunk_227"
+            ],
+            "retrieved_ids": [
+                "chunk_240",
+                "doc_default_245",
+                "chunk_228"
+            ],
+            "hit": 0,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question": "Can a staff member take uncertified sick leave, and for how many days?",
+            "relevant_chunks": [
+                "chunk_119"
+            ],
+            "retrieved_ids": [
+                "chunk_119",
+                "chunk_118",
+                "doc_default_121"
+            ],
+            "hit": 1,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+        },
+        {
+            "question": "What happens if a staff member is recalled from annual leave?",
+            "relevant_chunks": [
+                "chunk_110"
+            ],
+            "retrieved_ids": [
+                "chunk_210",
+                "chunk_228",
+                "chunk_240"
+            ],
+            "hit": 0,
+            "recall": 0.0,
+            "reciprocal_rank": 0.0
+        },
+        {
+            "question": "What is the paternity leave entitlement?",
+            "relevant_chunks": [
+                "chunk_126"
+            ],
+            "retrieved_ids": [
+                "chunk_126",
+                "doc_default_129",
+                "chunk_240"
+            ],
+            "hit": 1,
+            "recall": 1.0,
+            "reciprocal_rank": 1.0
+        }
+    ]
+}

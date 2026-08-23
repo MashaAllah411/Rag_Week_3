@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">RAG Debugger — Week 4 M2 | Document Assistant</title>
+  <meta name="description" content="Week 4 Module 2 — Debugging Retrieval: Hybrid Search, Reranking & Failure Separation. High-precision Document RAG." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-msg">Running RAG pipeline…</div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<div class="app-wrapper">
+
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-icon">🔍</div>
+      <div>
+        <div class="header-title">RAG Debugger</div>
+        <div class="header-subtitle" id="header-subtitle">Week 4 · M2 — Retrieval & RAG · Document Assistant</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span class="badge badge-week">Week 4 · M2</span>
+      <span class="badge badge-doc" id="header-doc-badge">Insurance Policy</span>
+    </div>
+  </header>
+
+  <!-- ── Navigation ──────────────────────────────────────── -->
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-panel="panel-ask" role="tab" aria-selected="true" id="tab-ask">
+      <span class="tab-icon">💬</span> Ask
+    </button>
+    <button class="nav-tab" data-panel="panel-dashboard" role="tab" aria-selected="false" id="tab-dashboard">
+      <span class="tab-icon">📊</span> Metrics Dashboard
+    </button>
+    <button class="nav-tab" data-panel="panel-failures" role="tab" aria-selected="false" id="tab-failures">
+      <span class="tab-icon">🔬</span> Failure Analysis
+    </button>
+    <button class="nav-tab" data-panel="panel-documents" role="tab" aria-selected="false" id="tab-documents">
+      <span class="tab-icon">📁</span> Documents
+    </button>
+  </nav>
+
+  <!-- ── Main Content ────────────────────────────────────── -->
+  <main class="main-content" role="main">
+
+    <!-- ════════════════════════════════════════════════════
+         ASK PANEL
+         ════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-ask">
+      <div class="ask-layout">
+
+        <!-- LEFT: Query Controls -->
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="card-title-icon">⚙️</span> Pipeline Configuration</div>
+
+            <!-- Retrieval Mode -->
+            <div class="form-group">
+              <label class="form-label">Retrieval Mode</label>
+              <div class="mode-group">
+                <div>
+                  <input type="radio" name="mode" id="mode-semantic" value="semantic" class="mode-option" />
+                  <label class="mode-label" for="mode-semantic">
+                    <span class="mode-icon">🔮</span>
+                    <span class="mode-name">Semantic</span>
+                  </label>
+                </div>
+                <div>
+                  <input type="radio" name="mode" id="mode-hybrid" value="hybrid" class="mode-option" checked />
+                  <label class="mode-label" for="mode-hybrid">
+                    <span class="mode-icon">🔀</span>
+                    <span class="mode-name">Hybrid</span>
+                  </label>
+                </div>
+                <div>
+                  <input type="radio" name="mode" id="mode-reranked" value="reranked" class="mode-option" />
+                  <label class="mode-label" for="mode-reranked">
+                    <span class="mode-icon">⚡</span>
+                    <span class="mode-name">Reranked</span>
+                  </label>
+                </div>
+              </div>
+              <div style="margin-top:10px;font-size:11px;color:var(--text-muted);">
+                Semantic = Pinecone only · Hybrid = BM25 + RRF · Reranked = Hybrid + Cross-Encoder + MMR
+              </div>
+            </div>
+
+            <!-- Top K -->
+            <div class="form-group">
+              <label class="form-label" for="top-k">Top K Chunks</label>
+              <div class="slider-wrapper">
+                <input type="range" id="top-k" min="1" max="10" value="3" />
+                <span class="slider-value" id="top-k-val">3</span>
+              </div>
+            </div>
+
+            <!-- Similarity Threshold -->
+            <div class="form-group">
+              <label class="form-label" for="threshold">Similarity Threshold</label>
+              <div class="slider-wrapper">
+                <input type="range" id="threshold" min="0" max="1" step="0.05" value="0" />
+                <span class="slider-value" id="threshold-val">0</span>
+              </div>
+              <div class="text-muted" style="margin-top:6px;">0 = no gate · set >0 to trigger "I don't know" for low-confidence retrievals</div>
+            </div>
+
+            <!-- Query Rewriter Toggle -->
+            <div class="form-group">
+              <div class="toggle-group">
+                <span class="toggle-label">Query Rewriter (Llama 3.2)</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="use-rewriter" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Question + Results -->
+        <div>
+          <form id="ask-form">
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-title"><span class="card-title-icon">💬</span> Ask a Question</div>
+              <div class="form-group" style="margin-bottom:0;">
+                <textarea
+                  class="form-textarea"
+                  id="question-input"
+                  placeholder="e.g. What is the schedule of depreciation for fixing IDV of the vehicle?"
+                  aria-label="Question input"
+                ></textarea>
+              </div>
+
+              <!-- Quick question pills (populated dynamically from indexed document) -->
+              <div id="quick-questions-container" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" class="chunk-expand-btn" style="border:1px solid var(--border);padding:5px 12px;border-radius:6px;background:var(--bg-input);"
+                  onclick="setQuestion('What is the schedule of depreciation for fixing IDV of the vehicle?')">IDV Depreciation?</button>
+                <button type="button" class="chunk-expand-btn" style="border:1px solid var(--border);padding:5px 12px;border-radius:6px;background:var(--bg-input);"
+                  onclick="setQuestion('What are the rules and exclusions for Depreciation Reimbursement add-on cover?')">Zero Dep Cover?</button>
+                <button type="button" class="chunk-expand-btn" style="border:1px solid var(--border);padding:5px 12px;border-radius:6px;background:var(--bg-input);"
+                  onclick="setQuestion('What damages are covered under the Engine Guard add-on?')">Engine Guard?</button>
+                <button type="button" class="chunk-expand-btn" style="border:1px solid var(--border);padding:5px 12px;border-radius:6px;background:var(--bg-input);"
+                  onclick="setQuestion('What is the compensation scale for Owner-Driver personal accident cover?')">Personal Accident?</button>
+              </div>
+
+              <button type="submit" class="btn-ask" id="ask-btn" style="margin-top:18px;" aria-label="Ask question">
+                <span>🚀</span> Ask
+              </button>
+            </div>
+          </form>
+
+          <!-- Results section (hidden until answer arrives) -->
+          <div id="results-section" class="hidden">
+
+            <!-- Query Rewrite Pill -->
+            <div id="rewrite-pill" class="rewrite-pill hidden" style="margin-bottom:16px;">
+              <span>✏️ Rewritten:</span>
+              <span id="rewrite-original" class="text-muted"></span>
+              <span class="rewrite-arrow">→</span>
+              <span id="rewrite-new" style="color:var(--accent-secondary);font-style:italic;"></span>
+            </div>
+
+            <!-- Answer -->
+            <div class="answer-card">
+              <div class="answer-header">
+                <div class="answer-dot"></div>
+                <span class="answer-label">Answer</span>
+              </div>
+              <div class="answer-text" id="answer-text"></div>
+              <div class="answer-meta">
+                <div class="meta-item">📄 <span id="answer-source"></span></div>
+                <div class="meta-item">🔧 Mode: <span id="answer-mode"></span></div>
+                <div class="meta-item">Confidence: <span id="answer-confidence"></span></div>
+              </div>
+            </div>
+
+            <!-- Retrieved Chunks -->
+            <div class="card mt-4">
+              <div class="card-title">
+                <span class="card-title-icon">📋</span> Retrieved Chunks
+                <span id="chunk-count" style="margin-left:auto;font-size:11px;color:var(--accent-secondary);font-weight:600;"></span>
+              </div>
+              <div class="chunks-grid" id="chunks-container"></div>
+            </div>
+
+            <!-- Pipeline Steps -->
+            <div class="card mt-4">
+              <div class="card-title"><span class="card-title-icon">🔄</span> Pipeline Trace</div>
+              <div class="pipeline-steps" id="pipeline-steps-list"></div>
+            </div>
+
+          </div><!-- /results-section -->
+        </div>
+      </div>
+    </div>
+    <!-- /panel-ask -->
+
+
+    <!-- ════════════════════════════════════════════════════
+         METRICS DASHBOARD
+         ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-dashboard">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:6px;">Before vs After Metrics</h1>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">
+        One change was made — adding BM25 keyword search (hybrid) — and here's the proof it worked.
+      </p>
+
+      <!-- Metric cards -->
+      <div class="metrics-layout">
+        <div class="metric-card before">
+          <div class="metric-header">
+            <div class="metric-dot-before"></div>
+            <span class="metric-label">BEFORE — Semantic Search (Baseline)</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-item">
+              <div class="metric-value" id="b-hit">—</div>
+              <div class="metric-name">Hit-Rate@3</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-value" id="b-mrr">—</div>
+              <div class="metric-name">MRR</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-value" id="b-recall">—</div>
+              <div class="metric-name">Recall@3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-card after">
+          <div class="metric-header">
+            <div class="metric-dot-after"></div>
+            <span class="metric-label">AFTER — Hybrid Search (BM25 + RRF)</span>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-item">
+              <div class="metric-value" id="a-hit">—</div>
+              <div class="metric-name">Hit-Rate@3</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-value" id="a-mrr">—</div>
+              <div class="metric-name">MRR</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-value" id="a-recall">—</div>
+              <div class="metric-name">Recall@3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delta row -->
+      <div class="delta-row">
+        <div class="delta-pill">
+          <span>📈</span>
+          <span id="delta-hit">—</span>
+        </div>
+        <div class="delta-pill">
+          <span>⬆</span>
+          <span id="delta-mrr">—</span>
+        </div>
+      </div>
+
+      <!-- What changed -->
+      <div class="improvement-box">
+        <div class="improvement-title">
+          <span>🔧</span> The One Change Made
+        </div>
+        <div class="improvement-desc" id="one-change-desc">Loading…</div>
+        <div class="tag-list">
+          <span class="tag">BM25 Keyword Search</span>
+          <span class="tag">Reciprocal Rank Fusion (RRF)</span>
+          <span class="tag">k=60 smoothing</span>
+          <span class="tag">Top-10 candidates per retriever</span>
+        </div>
+      </div>
+
+      <!-- Fixed & Still failing -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px;">
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">✅</span> Fixed by This Change</div>
+          <div id="fixed-tags" class="tag-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">❌</span> Still Failing</div>
+          <div id="failing-tags" class="tag-list"></div>
+        </div>
+      </div>
+
+      <!-- Per-question table -->
+      <div class="card">
+        <div class="card-title" style="align-items:flex-start;flex-direction:column;gap:12px;">
+          <span><span class="card-title-icon">📋</span> Per-Question Results</span>
+          <div style="display:flex;gap:8px;">
+            <button class="chunk-expand-btn eval-mode-btn active" data-mode="semantic"
+              style="border:1px solid var(--border);padding:6px 14px;border-radius:6px;background:var(--bg-input);">
+              Semantic (Baseline)
+            </button>
+            <button class="chunk-expand-btn eval-mode-btn" data-mode="hybrid"
+              style="border:1px solid var(--border);padding:6px 14px;border-radius:6px;background:var(--bg-input);">
+              Hybrid
+            </button>
+          </div>
+        </div>
+
+        <div class="failure-table-wrapper">
+          <table class="failure-table" aria-label="Evaluation results table">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Result</th>
+                <th>RR</th>
+                <th>Retrieved (top 3)</th>
+                <th>Expected</th>
+                <th>Failure Type</th>
+              </tr>
+            </thead>
+            <tbody id="eval-tbody">
+              <tr><td colspan="6" class="text-muted" style="padding:20px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- /panel-dashboard -->
+
+
+    <!-- ════════════════════════════════════════════════════
+         FAILURE ANALYSIS
+         ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-failures">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:6px;">Failure Analysis</h1>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">
+        For each failing question: is it a <strong style="color:var(--accent-red)">Retrieval Failure</strong>
+        (wrong document fetched) or a <strong style="color:var(--accent-amber)">Generation Failure</strong>
+        (right document fetched, wrong answer)? Label each below.
+      </p>
+
+      <!-- Legend -->
+      <div class="card" style="margin-bottom:20px;padding:16px 24px;">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+          <div>
+            <span class="failure-badge retrieval">⚠ Retrieval Failure</span>
+            <span class="text-muted" style="margin-left:8px;font-size:12px;">Correct chunk NOT in top-K → fix: better retrieval</span>
+          </div>
+          <div>
+            <span class="failure-badge generation">⚡ Generation Failure</span>
+            <span class="text-muted" style="margin-left:8px;font-size:12px;">Correct chunk retrieved → LLM failed → fix: better prompt/model</span>
+          </div>
+          <div>
+            <span class="failure-badge pass">✓ Pass</span>
+            <span class="text-muted" style="margin-left:8px;font-size:12px;">Both retrieval and answer correct</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="failures-container">
+        <div class="skeleton" style="height:120px;border-radius:12px;"></div>
+      </div>
+    </div>
+    <!-- /panel-failures -->
+
+
+    <!-- ════════════════════════════════════════════════════
+         DOCUMENTS
+         ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-documents">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:6px;">Indexed Documents</h1>
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">
+        Documents currently indexed into the Pinecone vector database.
+      </p>
+
+      <form id="document-upload-form" class="card" style="margin-bottom:16px;padding:16px;">
+        <div style="font-weight:600;margin-bottom:8px;">Upload a PDF</div>
+        <div style="color:var(--text-muted);font-size:12px;margin-bottom:12px;">The document is saved locally and indexed in Pinecone for retrieval.</div>
+        <input id="document-file-input" type="file" accept="application/pdf,.pdf" required>
+        <button type="submit" class="chunk-expand-btn" style="margin-left:8px;">Upload and index</button>
+      </form>
+
+      <div id="documents-container">
+        <div class="skeleton" style="height:80px;border-radius:12px;"></div>
+      </div>
+
+      <!-- Tech stack info -->
+      <div class="card mt-6" style="margin-top:20px;">
+        <div class="card-title"><span class="card-title-icon">🏗️</span> System Architecture</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">EMBEDDING</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-cyan);">all-MiniLM-L6-v2</div>
+            <div class="text-muted" style="margin-top:4px;">384-dim · Sentence Transformers</div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">VECTOR DB</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-primary);">Pinecone</div>
+            <div class="text-muted" style="margin-top:4px;">Index: rag-week-3-py · Cosine</div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">KEYWORD SEARCH</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-amber);">BM25Okapi</div>
+            <div class="text-muted" style="margin-top:4px;">rank-bm25 · In-memory index</div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">RERANKER</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-secondary);">Cross-Encoder</div>
+            <div class="text-muted" style="margin-top:4px;">ms-marco-MiniLM-L-6-v2</div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">LLM</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-green);">Llama 3.2</div>
+            <div class="text-muted" style="margin-top:4px;">Ollama · Local inference</div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:var(--bg-input);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;">DIVERSITY</div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent-red);">MMR (λ=0.6)</div>
+            <div class="text-muted" style="margin-top:4px;">Maximal Marginal Relevance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /panel-documents -->
+
+  </main>
+</div>
+
+<script src="/static/js/app.js"></script>
+<script>
+  // Quick question helper
+  function setQuestion(q) {
+    document.getElementById('question-input').value = q;
+    document.getElementById('question-input').focus();
+  }
+</script>
+</body>
+</html>
