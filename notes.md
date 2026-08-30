@@ -85,7 +85,7 @@
 - **Target Failure Mode:** Mode 1 (Query Rewriter Vector Drift on One-Word Prompts) & Mode 2 (Missing Specific Policy Section Chunk Retrieval).
 - **Specific Fix Planned:** Implement metadata-based document routing (HR vs Insurance form scope filter) and preserve raw user keywords alongside LLM rewritten queries during BM25 retrieval.
 - **Expected Numeric Delta:** "Adding metadata scope filtering and hybrid keyword retention will drop Failure Mode 1 (One-Word Vector Drift) from 15% (3/20) to 0% (0/20) and improve retrieval hit rate for specific section rules (Mode 2) from 25% failure down to under 10%."
-- **Git Commit Hash:** `PENDING_COMMIT` *(To be populated upon git commit)*
+- **Git Commit Hash:** `ff0acf4`
 
 ---
 
