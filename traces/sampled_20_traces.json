@@ -1,0 +1,562 @@
+[
+  {
+    "trace_id": "trc_20260830_555cd901",
+    "timestamp": "2026-08-30T10:08:30.769519+00:00",
+    "query": "Does the policy cover home office electricity and internet bills?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_141",
+        "score": -9.9521
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_59",
+        "score": -10.5438
+      },
+      {
+        "chunk_id": "doc_default_141",
+        "score": -10.7456
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_b9ca6585",
+    "timestamp": "2026-08-30T10:07:15.220272+00:00",
+    "query": "What happens if an employee is recalled from annual leave due to an emergency?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_120",
+        "score": -3.1733
+      },
+      {
+        "chunk_id": "doc_default_104",
+        "score": -3.289
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_49",
+        "score": -9.8655
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_24a5894d",
+    "timestamp": "2026-08-30T10:06:57.452353+00:00",
+    "query": "Are flexible working hours a guaranteed right for employees?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_108",
+        "score": -0.4119
+      },
+      {
+        "chunk_id": "chunk_107",
+        "score": -1.8673
+      },
+      {
+        "chunk_id": "insurancepolicy:chunk_35",
+        "score": -10.7722
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_1554a8e9",
+    "timestamp": "2026-08-30T10:07:41.178449+00:00",
+    "query": "What is the retirement age policy for full-time staff?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_91",
+        "score": -7.1264
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_63",
+        "score": -6.9941
+      },
+      {
+        "chunk_id": "chunk_86",
+        "score": -8.9131
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_66e335ec",
+    "timestamp": "2026-08-30T10:07:38.066309+00:00",
+    "query": "How is overtime compensated for work performed during weekends?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_108",
+        "score": -10.0338
+      },
+      {
+        "chunk_id": "chunk_242",
+        "score": -8.8576
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_37",
+        "score": -10.8571
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_b581339b",
+    "timestamp": "2026-08-30T10:07:36.517450+00:00",
+    "query": "What is the policy for carrying forward unused annual leave into the next year?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_117",
+        "score": 0.4694
+      },
+      {
+        "chunk_id": "chunk_242",
+        "score": -3.0991
+      },
+      {
+        "chunk_id": "doc_default_111",
+        "score": -0.9312
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "According to Section 5.2.7 Carry forward of leave, staff members shall not carry forward more than 5 days of their annual leave entitlement beyond December 31st. Any approved days carried forward must be taken by 30th June the following year.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_28189b78",
+    "timestamp": "2026-08-30T10:07:17.054517+00:00",
+    "query": "What is the paternity leave entitlement for male staff members?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_126",
+        "score": -0.487
+      },
+      {
+        "chunk_id": "insurancepolicy:chunk_35",
+        "score": -10.4543
+      },
+      {
+        "chunk_id": "chunk_240",
+        "score": -1.8771
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "According to the provided context, a staff member shall be entitled to paternity leave of two weeks with full pay.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_bc3702ab",
+    "timestamp": "2026-08-30T10:07:13.673979+00:00",
+    "query": "Can an employee take uncertified sick leave, and for how many days?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_119",
+        "score": 4.6069
+      },
+      {
+        "chunk_id": "chunk_117",
+        "score": 0.747
+      },
+      {
+        "chunk_id": "doc_default_122",
+        "score": 4.3089
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "Section 5.3.2 Sick Leave states: \"Staff members who are unable to perform their duties by reason of illness or injury or whose attendance at work is prevented by public health requirements will be granted sick leave.\"\n\nHowever, the specific question about uncertified sick leave is answered in Section 5.3.2 Uncertified sick leave: \"A staff member may take uncertified sick leave for up to a total of seven working days in an annual cycle starting 1st January of any year, when incapacitated for the performance of his or her duties by illness or injury provided that the staff member does not take more than three consecutive days of uncertified sick leave.\"\n\nTherefore, the answer is: Yes, an employee can take uncertified sick leave, and the maximum number of days allowed is seven working days in an annual cycle.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_4a99b54f",
+    "timestamp": "2026-08-30T10:08:17.959400+00:00",
+    "query": "pension?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_91",
+        "score": -7.8188
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_46",
+        "score": -10.5305
+      },
+      {
+        "chunk_id": "chunk_90",
+        "score": -9.0185
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_1bafba6e",
+    "timestamp": "2026-08-30T10:07:09.317842+00:00",
+    "query": "What is the required notice period for resignation?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_240",
+        "score": -0.6616
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_25",
+        "score": -8.1672
+      },
+      {
+        "chunk_id": "chunk_228",
+        "score": -2.4834
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "Section i. In the case of resignation, the date shall be either the date of expiration of the notice period or such other date as the CEO accepts.\n\nAnswer: The required notice period for resignation is not explicitly stated, but it is mentioned that the date of entitlement to salary, allowances, and benefits shall cease shall be determined according to the provisions, implying that a notice period is required.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_941c091d",
+    "timestamp": "2026-08-30T10:08:00.146908+00:00",
+    "query": "timing?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_133",
+        "score": -10.8147
+      },
+      {
+        "chunk_id": "insurancepolicy:chunk_4",
+        "score": -10.5718
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_8",
+        "score": -10.8428
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_eb2810be",
+    "timestamp": "2026-08-30T10:06:59.221102+00:00",
+    "query": "What is the standard annual leave entitlement for full-time staff?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_108",
+        "score": 5.265
+      },
+      {
+        "chunk_id": "chunk_116",
+        "score": 0.2656
+      },
+      {
+        "chunk_id": "chunk_113",
+        "score": 0.6462
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "Section 5.2.1 of the policy states that the standard annual leave entitlement for full-time staff members is 24 days per annum.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_dcdb7013",
+    "timestamp": "2026-08-30T10:08:32.737516+00:00",
+    "query": "What is the claim payout limit for third-party property liability under Edition 2010?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_34",
+        "score": -5.3286
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_9",
+        "score": -4.7216
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_56",
+        "score": -8.4568
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_4b5ea250",
+    "timestamp": "2026-08-30T10:08:13.441522+00:00",
+    "query": "notice?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_25",
+        "score": -0.7267
+      },
+      {
+        "chunk_id": "chunk_193",
+        "score": -7.2227
+      },
+      {
+        "chunk_id": "insurancepolicy:chunk_1",
+        "score": -5.5705
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "Section 1 of the provided Context defines \"Notice\" as:\n\n\"Notice shall be given in writing to the Company immediately upon the occurrence of any accidental loss or damage and in the event of any claim and thereafter the insured shall give all such information and assistance as the Company shall require.\"\n\nTherefore, according to this section, notice refers to written notice given to the Company in a specific situation, such as an accidental loss or damage, or in the event of a claim.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_6afbd9a1",
+    "timestamp": "2026-08-30T10:08:23.479880+00:00",
+    "query": "Does GESCI cover dental insurance and cosmetic surgery for dependents?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_95",
+        "score": 2.0966
+      },
+      {
+        "chunk_id": "doc_default_97",
+        "score": -5.1212
+      },
+      {
+        "chunk_id": "chunk_94",
+        "score": 1.1192
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_572cc178",
+    "timestamp": "2026-08-30T10:08:34.170817+00:00",
+    "query": "What is the procedure for requesting an interest-free personal loan?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_93",
+        "score": -9.1948
+      },
+      {
+        "chunk_id": "doc_default_61",
+        "score": -10.4984
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_14",
+        "score": -11.0812
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_2ff6bfd8",
+    "timestamp": "2026-08-30T10:07:39.614355+00:00",
+    "query": "What happens if an employee is absent without authorization for 3 consecutive days?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_120",
+        "score": -3.9865
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_31",
+        "score": -6.8259
+      },
+      {
+        "chunk_id": "chunk_119",
+        "score": 0.3197
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_5b4058bb",
+    "timestamp": "2026-08-30T10:07:44.918276+00:00",
+    "query": "[REDACTED_NAME] (ID [REDACTED_ID], email [REDACTED_EMAIL]) needs clarification on maternity leave.",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_128",
+        "score": -3.0222
+      },
+      {
+        "chunk_id": "doc_default_127",
+        "score": -4.5314
+      },
+      {
+        "chunk_id": "commercial-vehicles-package-policy-93ee460add:chunk_28",
+        "score": -9.299
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "I don't know based on the provided documents.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_ad2f0426",
+    "timestamp": "2026-08-30T10:06:55.058500+00:00",
+    "query": "What are the official working hours for GESCI staff?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "doc_default_108",
+        "score": 9.5652
+      },
+      {
+        "chunk_id": "chunk_111",
+        "score": 2.035
+      },
+      {
+        "chunk_id": "chunk_107",
+        "score": 9.5652
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "According to section 5.1 of the provided context, the official working hours for all GESCI staff is 40 hours in a week, and the normal working hours are 9.00 am to 5:30 pm Monday to Friday, with one hour for lunch.",
+    "pii_redacted": true
+  },
+  {
+    "trace_id": "trc_20260830_a6c98189",
+    "timestamp": "2026-08-30T10:08:36.420825+00:00",
+    "query": "How does the policy handle international relocation shipping expenses?",
+    "prompt_version": "v1.0",
+    "retrieved_chunks": [
+      {
+        "chunk_id": "chunk_141",
+        "score": -9.3984
+      },
+      {
+        "chunk_id": "doc_default_102",
+        "score": 1.142
+      },
+      {
+        "chunk_id": "chunk_98",
+        "score": 2.5284
+      }
+    ],
+    "retriever_type": "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    "model": "llama3.2",
+    "model_parameters": {
+      "temperature": 0.4,
+      "top_p": 0.9
+    },
+    "raw_llm_output": "Section 4.4.4 Relocation Benefits states that GESCI covers relocation expenses for eligible staff, specifically mentioning that the expenses covered are travel and removal and shipment of the staff member's personal effects and household goods if applicable.",
+    "pii_redacted": true
+  }
+]

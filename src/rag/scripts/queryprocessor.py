@@ -47,7 +47,8 @@ def print_inspection_view(
         print(f"\nRank {rank}")
         print(f"Chunk ID        : {result['id']}")
         print(f"Similarity Score: {result['score']}")
-        print(f"\n{result['text']}")
+        safe_text = result['text'].encode('ascii', errors='replace').decode('ascii')
+        print(f"\n{safe_text}")
         print()
 
     # ── FINAL ANSWER ─────────────────────────────────────────
