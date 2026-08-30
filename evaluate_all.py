@@ -2,10 +2,10 @@
 # evaluate_all.py — Unified Week 6 Evaluation Suite
 #
 # PURPOSE:
-#   Executes all 25+ evaluation cases in taxonomy_eval_set.json:
+#   Executes all 25+ evaluation cases in data/taxonomy_eval_set.json:
 #     1. Runs 4 Deterministic Assertions (eval_assertions.py)
-#     2. Runs LLM Judge V1 (judge_v1.txt) and measures agreement_before
-#     3. Runs LLM Judge V2 (judge_v2.txt) and measures agreement_after
+#     2. Runs LLM Judge V1 (data/prompts/judge_v1.txt) and measures agreement_before
+#     3. Runs LLM Judge V2 (data/prompts/judge_v2.txt) and measures agreement_after
 #     4. Prints Pass Rate by Week-5 Taxonomy Mode
 #     5. Reports assertion vs. judge count (4 assertions vs 1 judged criterion)
 # ============================================================
@@ -21,12 +21,12 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("./src"))
 
 from eval_assertions import run_all_assertions
-from rag.scripts.main_rag import run_master_rag
 
-EVAL_SET_PATH = "taxonomy_eval_set.json"
-HUMAN_LABELS_PATH = "labels_25.json"
-JUDGE_V1_PATH = "judge_v1.txt"
-JUDGE_V2_PATH = "judge_v2.txt"
+EVAL_SET_PATH = os.path.join("data", "taxonomy_eval_set.json")
+HUMAN_LABELS_PATH = os.path.join("data", "labels_25.json")
+JUDGE_V1_PATH = os.path.join("data", "prompts", "judge_v1.txt")
+JUDGE_V2_PATH = os.path.join("data", "prompts", "judge_v2.txt")
+DISAGREEMENT_FILE = os.path.join("data", "disagreements_analysis.json")
 
 
 def load_file(path: str) -> str:
@@ -56,7 +56,6 @@ def run_llm_judge(prompt_template: str, query: str, context: str, answer: str) -
         elif "VERDICT: 0" in output or "VERDICT:0" in output:
             return 0
         else:
-            # Fallback parsing
             return 1 if "pass" in output.lower() else 0
     except Exception as e:
         print(f"⚠️ Judge call failed ({e}), defaulting to 0.")
@@ -68,7 +67,6 @@ def run_complete_evaluation():
     print("WEEK 6 UNIFIED EVALUATION SUITE — Task Set D")
     print(f"{'=' * 70}\n")
 
-    # Load eval dataset and human labels
     with open(EVAL_SET_PATH, "r", encoding="utf-8") as f:
         eval_items = json.load(f)
 
@@ -78,7 +76,6 @@ def run_complete_evaluation():
     judge_v1_prompt = load_file(JUDGE_V1_PATH)
     judge_v2_prompt = load_file(JUDGE_V2_PATH)
 
-    # Track metrics
     mode_counts = {}
     mode_passes = {}
     
@@ -86,8 +83,7 @@ def run_complete_evaluation():
     v2_matches = 0
     disagreements_v1 = []
 
-    print(f"Loaded {len(eval_items)} evaluation cases across 6 taxonomy modes.\n")
-    print("Running pipeline & evaluations for all 25 cases...\n")
+    print(f"Loaded {len(eval_items)} evaluation cases from {EVAL_SET_PATH}.\n")
 
     for idx, item in enumerate(eval_items, start=1):
         item_id = item["id"]
@@ -95,10 +91,8 @@ def run_complete_evaluation():
         query = item["question"]
         human_label = human_labels_data.get(item_id, 0)
 
-        # Track mode stats
         mode_counts[mode] = mode_counts.get(mode, 0) + 1
 
-        # Run pipeline (using hybrid retrieval)
         from rag.core.retrieval.hybrid_retriever import hybrid_search
         from rag.core.retrieval.reranker import rerank_chunks
         from rag.core.retrieval.mmr import apply_mmr
@@ -111,7 +105,7 @@ def run_complete_evaluation():
         context_str = "\n\n---\n\n".join(c["text"] for c in final_chunks)
         answer = query_llm_with_context(query, context_str)
 
-        # 1. Deterministic Assertions (4 Assertions)
+        # 1. Deterministic Assertions
         assertions_res = run_all_assertions(item, answer)
 
         # 2. LLM Judge V1
@@ -132,7 +126,6 @@ def run_complete_evaluation():
         if judge_v2_verdict == human_label:
             v2_matches += 1
 
-        # Final pass criteria for taxonomy table: Assertions Pass AND Human/Judge V2 Pass
         is_pass = assertions_res["all_passed"] and judge_v2_verdict == 1
         if is_pass:
             mode_passes[mode] = mode_passes.get(mode, 0) + 1
@@ -140,7 +133,6 @@ def run_complete_evaluation():
         status_str = "[PASS]" if is_pass else "[FAIL]"
         print(f"[{idx:02d}/25] {item_id} | Mode: {mode:25s} | Assertions: {str(assertions_res['all_passed']):5s} | Human: {human_label} | V1: {judge_v1_verdict} | V2: {judge_v2_verdict} | Overall: {status_str}")
 
-    # Compute Agreement Percentages
     total_cases = len(eval_items)
     agreement_before = (v1_matches / total_cases) * 100.0
     agreement_after = (v2_matches / total_cases) * 100.0
@@ -175,9 +167,7 @@ def run_complete_evaluation():
         print(f" {m:30s} | {cnt:5d} | {pss:6d} | {rate:9.1f}%")
     print(f"{'=' * 70}\n")
 
-    # Save disagreement details for notes
-    disagreement_file = "disagreements_analysis.json"
-    with open(disagreement_file, "w", encoding="utf-8") as f:
+    with open(DISAGREEMENT_FILE, "w", encoding="utf-8") as f:
         json.dump(disagreements_v1, f, indent=2)
 
     return {

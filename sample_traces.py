@@ -59,8 +59,8 @@ def sample_traces(seed: int = RANDOM_SEED, sample_size: int = SAMPLE_SIZE) -> Li
 if __name__ == "__main__":
     sampled_traces = sample_traces()
     
-    # Save the sampled traces to a standalone file for easy reference
-    sample_file = "./traces/sampled_20_traces.json"
+    # Save the sampled traces to data/ for clean architecture
+    sample_file = os.path.join("data", "sampled_20_traces.json")
     with open(sample_file, "w", encoding="utf-8") as f:
         json.dump(sampled_traces, f, indent=2)
     print(f"Sampled 20 traces saved to: {sample_file}\n")

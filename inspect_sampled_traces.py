@@ -8,7 +8,7 @@
 
 import json
 
-with open("traces/sampled_20_traces.json", "r", encoding="utf-8") as f:
+with open("data/sampled_20_traces.json", "r", encoding="utf-8") as f:
     sampled = json.load(f)
 
 print(f"============================================================")
