@@ -18,13 +18,18 @@
 # ============================================================
 
 import logging
-
 from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
 _OUT_OF_SCOPE_RESPONSE = (
     "I can only answer questions related to the provided insurance policy document."
+)
+
+_IDK_RESPONSE = (
+    "I don't know based on the provided documents. "
+    "The retrieved context does not contain a clear answer to your question. "
+    "Please rephrase or consult the Insurance Policy document directly."
 )
 
 
@@ -70,8 +75,6 @@ def _get_llm():
 def _assess_confidence(chunks: List[Dict], threshold: float) -> str:
     """
     Returns 'high', 'low', or 'unknown' based on top chunk score.
-    For hybrid/reranked results, we look at rerank_score or rrf_score.
-    For semantic, we look at the 'score' field.
     """
     if not chunks:
         return "unknown"
@@ -82,15 +85,6 @@ def _assess_confidence(chunks: List[Dict], threshold: float) -> str:
     elif score > 0:
         return "low"
     return "unknown"
-
-
-# ── I-don't-know guard ───────────────────────────────────────
-
-_IDK_RESPONSE = (
-    "I don't know based on the provided documents. "
-    "The retrieved context does not contain a clear answer to your question. "
-    "Please rephrase or consult the Insurance Policy document directly."
-)
 
 
 # ── Main pipeline function ───────────────────────────────────
@@ -105,22 +99,13 @@ def run_pipeline(
 ) -> Dict:
     """
     Full RAG pipeline:
-      1. (Optional) Query rewriting
-      2. Retrieval:  semantic | hybrid | reranked
-      3. Confidence check
-      4. LLM grounded answer generation
-      5. Structured result dict
-
-    Returns:
-        {
-            "question": ...,
-            "rewritten_query": ...,
-            "answer": ...,
-            "retrieved_chunks": [...],
-            "mode": ...,
-            "confidence": "high" | "low" | "unknown",
-            "pipeline_steps": [...]
-        }
+      1. Scope Check
+      2. (Optional) Query rewriting
+      3. Retrieval:  semantic | hybrid | reranked
+      4. Confidence check
+      5. LLM grounded answer generation
+      6. Log PII-redacted trace (Week 5)
+      7. Return structured result dict
     """
     pipeline_steps = []
 
@@ -170,7 +155,6 @@ def run_pipeline(
         query_vec = embed_fn(search_query)
         metadata_filter = {"document_name": {"$eq": document_name}} if document_name else None
         raw_results = search_fn(query_vec, top_k=top_k, filter=metadata_filter)
-        # Normalize keys
         for r in raw_results:
             raw_chunks.append({
                 "id": r["id"],
@@ -195,17 +179,14 @@ def run_pipeline(
 
     elif mode == "reranked":
         logger.info("[PIPELINE] Mode: Hybrid + Cross-Encoder Reranking + MMR")
-        # Step 2a: Hybrid with larger candidate pool
         hybrid_fn = _get_hybrid_search()
         hybrid_candidates = hybrid_fn(search_query, top_k=10, candidate_k=10, document_name=document_name)
         pipeline_steps.append(f"Hybrid search → {len(hybrid_candidates)} candidates")
 
-        # Step 2b: Cross-encoder reranking
         rerank_fn = _get_reranker()
         reranked = rerank_fn(search_query, hybrid_candidates, top_k=min(6, len(hybrid_candidates)))
         pipeline_steps.append(f"Cross-encoder reranking → top {len(reranked)} reranked")
 
-        # Step 2c: MMR diversity filter
         mmr_fn = _get_mmr()
         final = mmr_fn(search_query, reranked, top_k=top_k, lambda_param=0.6)
         pipeline_steps.append(f"MMR diversity filter → top {len(final)} diverse chunks")
@@ -246,7 +227,23 @@ def run_pipeline(
             )
             pipeline_steps.append(f"LLM call failed: {e}")
 
-    # ── Step 5: Build structured result ─────────────────────
+    # ── Step 5: Log PII-Redacted Trace (Week 5 Requirement) ──
+    try:
+        from tracer import log_trace
+        log_trace(
+            query=question,
+            retrieved_chunks=raw_chunks,
+            raw_llm_output=answer,
+            prompt_version="v1.0",
+            retriever_type=f"Web API ({mode})",
+            model_name="llama3.2",
+            model_parameters={"temperature": 0.4, "top_p": 0.9}
+        )
+        pipeline_steps.append("PII-redacted trace logged to traces/traces.jsonl")
+    except Exception as e:
+        logger.warning(f"[PIPELINE] Trace logging failed: {e}")
+
+    # ── Step 6: Return structured result ─────────────────────
     return {
         "question": question,
         "rewritten_query": rewritten_query if rewritten_query != question else None,
