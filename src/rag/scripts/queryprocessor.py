@@ -1,6 +1,7 @@
 from rag.infra.embedder import embed_user_query
 from rag.infra.vectorstore import search_in_pinecone
 from rag.infra.llm import query_llm_with_context
+from tracer import log_trace
 from typing import List
 
 
@@ -63,14 +64,10 @@ def process_user_query(query: str):
     query_vector = embed_user_query(query)
 
     # Step 2: Search Pinecone — returns structured list of dicts
-    # PHASE 1 CHANGE: retrieval_results is now a list of dicts,
-    # not a plain string. Each dict has: id, score, text
     print("📌 Searching Pinecone...")
     retrieval_results = search_in_pinecone(query_vector)
 
     # Step 3: Build context string from structured results
-    # We join only the text fields to send to the LLM.
-    # The IDs and scores are kept for the inspection view.
     context = "\n\n---\n\n".join(
         result["text"] for result in retrieval_results
     )
@@ -81,6 +78,17 @@ def process_user_query(query: str):
 
     # Step 5: Print the full inspection view
     print_inspection_view(query, retrieval_results, answer)
+
+    # Step 6: Log complete PII-redacted trace (Week 5 Requirement 2 & 4)
+    log_trace(
+        query=query,
+        retrieved_chunks=retrieval_results,
+        raw_llm_output=answer,
+        prompt_version="v1.0",
+        retriever_type="Semantic Search (Pinecone)",
+        model_name="llama3.2",
+        model_parameters={"temperature": 0.4}
+    )
 
 
 if __name__ == "__main__":

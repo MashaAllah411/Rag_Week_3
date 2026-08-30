@@ -9,6 +9,7 @@
 #   5. Phase 10 : MMR Diversity Filtering (lambda = 0.6)
 #   6. LLM      : Answer Generation with Context (Llama 3.2)
 #   7. Phase 1  : Full Structured Inspection View Output
+#   8. Week 5   : PII-Redacted Trace Logging (traces.jsonl)
 # ============================================================
 
 from rag.core.query_rewriter import rewrite_query
@@ -17,10 +18,11 @@ from rag.core.retrieval.reranker import rerank_chunks
 from rag.core.retrieval.mmr import apply_mmr
 from rag.infra.llm import query_llm_with_context
 from rag.scripts.queryprocessor import print_inspection_view
+from tracer import log_trace
 
 
 def run_master_rag(raw_query: str):
-    """Executes the complete Week 4 RAG pipeline."""
+    """Executes the complete Week 4 & Week 5 RAG pipeline."""
 
     line = "=" * 60
     print(f"\n{line}")
@@ -53,7 +55,7 @@ def run_master_rag(raw_query: str):
     context = "\n\n---\n\n".join(item["text"] for item in final_chunks)
     answer = query_llm_with_context(raw_query, context)
 
-    # Format structured results for Inspection View
+    # Format structured results for Inspection View & Tracing
     inspection_results = [
         {
             "id": c["id"],
@@ -65,6 +67,17 @@ def run_master_rag(raw_query: str):
 
     # 6. Phase 1: Inspection View Output
     print_inspection_view(raw_query, inspection_results, answer)
+
+    # 7. Week 5: Log complete PII-redacted trace
+    log_trace(
+        query=raw_query,
+        retrieved_chunks=inspection_results,
+        raw_llm_output=answer,
+        prompt_version="v1.0",
+        retriever_type="Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+        model_name="llama3.2",
+        model_parameters={"temperature": 0.4, "top_p": 0.9}
+    )
 
 
 if __name__ == "__main__":
