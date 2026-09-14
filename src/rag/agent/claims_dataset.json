@@ -1,0 +1,92 @@
+[
+  {
+    "claim_id": "CLM-7001",
+    "claimant": "Alice Miller",
+    "incident_type": "Water Pipe Burst",
+    "expected_status": "APPROVED",
+    "expected_payout": 3000.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Standard water pipe burst in kitchen cabinet. Covered."
+  },
+  {
+    "claim_id": "CLM-7002",
+    "claimant": "Robert Vance",
+    "incident_type": "Basement Water Damage",
+    "expected_status": "DENIED",
+    "expected_payout": 0.0,
+    "requires_dynamic_policy_lookup": true,
+    "description": "Adjuster notes reveal torrential rain and rising lake water runoff (flood exclusion triggered)."
+  },
+  {
+    "claim_id": "CLM-7003",
+    "claimant": "Carlos Gomez",
+    "incident_type": "Commercial Vehicle Collision",
+    "expected_status": "APPROVED",
+    "expected_payout": 7750.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Delivery van collision with roadside barrier. Covered."
+  },
+  {
+    "claim_id": "CLM-7004",
+    "claimant": "Diana Prince",
+    "incident_type": "Roof Shingle Storm Damage",
+    "expected_status": "APPROVED",
+    "expected_payout": 3700.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Windstorm damage to roof shingles. Covered."
+  },
+  {
+    "claim_id": "CLM-7005",
+    "claimant": "Edward Stark",
+    "incident_type": "Property Fire",
+    "expected_status": "APPROVED",
+    "expected_payout": 42500.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Warehouse electrical fire. Arson ruled out. Covered."
+  },
+  {
+    "claim_id": "CLM-7006",
+    "claimant": "Fiona Gallagher",
+    "incident_type": "Storefront Vandalism",
+    "expected_status": "APPROVED",
+    "expected_payout": 2500.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Graffiti and shattered window glass. Covered."
+  },
+  {
+    "claim_id": "CLM-7007",
+    "claimant": "George Clark",
+    "incident_type": "Coastal Storm Surge",
+    "expected_status": "DENIED",
+    "expected_payout": 0.0,
+    "requires_dynamic_policy_lookup": true,
+    "description": "Adjuster notes reveal hurricane surge sea water inundation (coastal surge exclusion triggered)."
+  },
+  {
+    "claim_id": "CLM-7008",
+    "claimant": "Hannah Abbott",
+    "incident_type": "Inventory Theft",
+    "expected_status": "APPROVED",
+    "expected_payout": 8600.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Burglary with forced entry to storage unit. Covered."
+  },
+  {
+    "claim_id": "CLM-7009",
+    "claimant": "Ian Malcolm",
+    "incident_type": "Office Computer Equipment Surge",
+    "expected_status": "APPROVED",
+    "expected_payout": 5600.0,
+    "requires_dynamic_policy_lookup": false,
+    "description": "Lightning strike electrical breakdown. Covered."
+  },
+  {
+    "claim_id": "CLM-7010",
+    "claimant": "Julia Roberts",
+    "incident_type": "Unexplained Stock Loss",
+    "expected_status": "DENIED",
+    "expected_payout": 0.0,
+    "requires_dynamic_policy_lookup": true,
+    "description": "Adjuster notes reveal unexplained stock audit shortage without forced entry (mysterious disappearance exclusion triggered)."
+  }
+]

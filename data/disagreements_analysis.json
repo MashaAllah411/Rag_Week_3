@@ -4,14 +4,7 @@
     "query": "What is the required notice period for resignation?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "Section 5.2.7 Carry forward of leave does not directly address the notice period for resignation. However, Section i. In"
-  },
-  {
-    "id": "eval_02",
-    "query": "notice?",
-    "human": 0,
-    "judge_v1": 1,
-    "answer": "According to the provided Context, notice refers to:\n\n* A written notice given to the Company immediately upon the occur"
+    "answer": "Section 5.2.7 Carry forward of leave and Section 5.2.8 Leaving the organization do not directly answer the question. How"
   },
   {
     "id": "eval_03",
@@ -25,14 +18,21 @@
     "query": "What is the probationary period length for new staff?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "Section 3.6.1 states: \"The probationary period will be six months for all staff contract exceeding 12 months.\"\n\nThis imp"
+    "answer": "Based on the provided Context (3.6 Probation), the probationary period length for all staff contracts exceeding 12 month"
+  },
+  {
+    "id": "eval_08",
+    "query": "How long is the maternity leave entitlement with full pay?",
+    "human": 1,
+    "judge_v1": 0,
+    "answer": "According to section d) and the additional information, a staff member shall receive maternity leave with full pay for t"
   },
   {
     "id": "eval_09",
     "query": "What happens if an employee is recalled from annual leave due to an emergency?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "Section 3. Recall from Leave:\n\nIn such events, whatever annual leave days remain due to the staff member should be taken"
+    "answer": "Section 3. Recall from Leave states that if an employee is recalled from leave or their annual leave authorization is ca"
   },
   {
     "id": "eval_11",
@@ -70,17 +70,10 @@
     "answer": "I don't know based on the provided documents."
   },
   {
-    "id": "eval_23",
-    "query": "How does the policy handle international relocation shipping expenses?",
-    "human": 1,
-    "judge_v1": 0,
-    "answer": "I don't know based on the provided documents."
-  },
-  {
     "id": "eval_24",
     "query": "What is the policy on compassionate leave for family bereavement?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "According to the provided Context, Section 5.3.1 of the policy states that the CEO may grant a staff member up to a maxi"
+    "answer": "I don't know based on the provided documents."
   }
 ]

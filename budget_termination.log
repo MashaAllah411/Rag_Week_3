@@ -1,0 +1,14 @@
+============================================================
+WEEK 7 BUDGET TERMINATION LOG EXCERPT
+============================================================
+Claim ID         : CLM-7002
+Budget Fired     : MAX_TOKENS (4500 > 4000)
+Passed           : False
+Total Iterations : 1
+Total Tokens     : 4500
+Total Cost ($)   : $0.009000
+------------------------------------------------------------
+EXECUTION TRACE LOG:
+  [AGENT START] Processing claim CLM-7002
+  ⚠️ [BUDGET TERMINATION] Exceeded Token Limit: MAX_TOKENS (4500 > 4000)
+============================================================
