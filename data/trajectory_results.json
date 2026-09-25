@@ -1,0 +1,626 @@
+{
+  "before": {
+    "label": "BEFORE Mitigation",
+    "eval_results": [
+      {
+        "claim_id": "CLM-7001",
+        "outcome_passed": false,
+        "trajectory_passed": false,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 0.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.0,
+        "actual_steps": 2,
+        "optimal_steps": 2,
+        "tokens": 633,
+        "cost": 0.001266,
+        "latency": 66.3172
+      },
+      {
+        "claim_id": "CLM-7002",
+        "outcome_passed": true,
+        "trajectory_passed": false,
+        "actual_sequence": [
+          "get_claim",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 0.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.5,
+        "actual_steps": 2,
+        "optimal_steps": 3,
+        "tokens": 697,
+        "cost": 0.001394,
+        "latency": 0.3668
+      },
+      {
+        "claim_id": "CLM-7003",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 701,
+        "cost": 0.001402,
+        "latency": 2.1678
+      },
+      {
+        "claim_id": "CLM-7004",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 700,
+        "cost": 0.0014,
+        "latency": 0.3673
+      },
+      {
+        "claim_id": "CLM-7005",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 695,
+        "cost": 0.00139,
+        "latency": 0.3695
+      },
+      {
+        "claim_id": "CLM-7006",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 696,
+        "cost": 0.001392,
+        "latency": 0.3675
+      },
+      {
+        "claim_id": "CLM-7007",
+        "outcome_passed": true,
+        "trajectory_passed": false,
+        "actual_sequence": [
+          "get_claim",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 0.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.5,
+        "actual_steps": 2,
+        "optimal_steps": 3,
+        "tokens": 689,
+        "cost": 0.001378,
+        "latency": 0.3736
+      },
+      {
+        "claim_id": "CLM-7008",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 694,
+        "cost": 0.001388,
+        "latency": 0.3654
+      },
+      {
+        "claim_id": "CLM-7009",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 698,
+        "cost": 0.001396,
+        "latency": 0.3914
+      },
+      {
+        "claim_id": "CLM-7010",
+        "outcome_passed": true,
+        "trajectory_passed": false,
+        "actual_sequence": [
+          "get_claim",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 0.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.5,
+        "actual_steps": 2,
+        "optimal_steps": 3,
+        "tokens": 700,
+        "cost": 0.0014,
+        "latency": 0.3353
+      }
+    ],
+    "outcome_pass_rate": 90.0,
+    "traj_pass_rate": 60.0,
+    "gap": 30.0,
+    "tool_choice_acc": 60.0,
+    "arg_validity_rate": 100.0,
+    "step_efficiency": 0.95,
+    "cost_p50": 0.001393,
+    "cost_max": 0.001402,
+    "latency_p50": 0.3685,
+    "latency_max": 66.3172,
+    "total_tokens": 6903,
+    "shortcut_failures": 4
+  },
+  "after": {
+    "label": "AFTER Mitigation (Sharpened Tool Trigger)",
+    "eval_results": [
+      {
+        "claim_id": "CLM-7001",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 690,
+        "cost": 0.00138,
+        "latency": 0.3723
+      },
+      {
+        "claim_id": "CLM-7002",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.0,
+        "actual_steps": 3,
+        "optimal_steps": 3,
+        "tokens": 697,
+        "cost": 0.001394,
+        "latency": 0.3767
+      },
+      {
+        "claim_id": "CLM-7003",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 701,
+        "cost": 0.001402,
+        "latency": 0.3768
+      },
+      {
+        "claim_id": "CLM-7004",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 700,
+        "cost": 0.0014,
+        "latency": 0.3558
+      },
+      {
+        "claim_id": "CLM-7005",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 695,
+        "cost": 0.00139,
+        "latency": 0.3759
+      },
+      {
+        "claim_id": "CLM-7006",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 696,
+        "cost": 0.001392,
+        "latency": 0.3778
+      },
+      {
+        "claim_id": "CLM-7007",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.0,
+        "actual_steps": 3,
+        "optimal_steps": 3,
+        "tokens": 689,
+        "cost": 0.001378,
+        "latency": 0.3665
+      },
+      {
+        "claim_id": "CLM-7008",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 694,
+        "cost": 0.001388,
+        "latency": 0.4066
+      },
+      {
+        "claim_id": "CLM-7009",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "compute_payout"
+          ],
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 0.6667,
+        "actual_steps": 3,
+        "optimal_steps": 2,
+        "tokens": 698,
+        "cost": 0.001396,
+        "latency": 0.3233
+      },
+      {
+        "claim_id": "CLM-7010",
+        "outcome_passed": true,
+        "trajectory_passed": true,
+        "actual_sequence": [
+          "get_claim",
+          "search_policy",
+          "compute_payout"
+        ],
+        "valid_paths": [
+          [
+            "get_claim",
+            "search_policy",
+            "compute_payout"
+          ],
+          [
+            "search_policy",
+            "get_claim",
+            "compute_payout"
+          ]
+        ],
+        "tool_choice_acc": 1.0,
+        "arg_validity_rate": 1.0,
+        "step_efficiency": 1.0,
+        "actual_steps": 3,
+        "optimal_steps": 3,
+        "tokens": 700,
+        "cost": 0.0014,
+        "latency": 0.3588
+      }
+    ],
+    "outcome_pass_rate": 100.0,
+    "traj_pass_rate": 100.0,
+    "gap": 0.0,
+    "tool_choice_acc": 100.0,
+    "arg_validity_rate": 100.0,
+    "step_efficiency": 0.7667,
+    "cost_p50": 0.001393,
+    "cost_max": 0.001402,
+    "latency_p50": 0.3741,
+    "latency_max": 0.4066,
+    "total_tokens": 6960,
+    "shortcut_failures": 0
+  },
+  "mitigation": {
+    "top_mode": "Unverified Exclusion Shortcut",
+    "count_before": 4,
+    "count_after": 0,
+    "price_tokens": 57,
+    "price_cost": 0.0,
+    "price_latency": 0.0056
+  }
+}
