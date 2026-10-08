@@ -1,0 +1,168 @@
+{
+  "_model_execution_boundary_statement": "THE MODEL CALL HAPPENS EXCLUSIVELY ON THE HOST AGENT TO REASON AND SELECT TOOLS; THE MCP SERVER NEVER CALLS AN LLM AND ONLY EXECUTES DETERMINISTIC TOOL FUNCTIONS.",
+  "protocol_exchange": [
+    {
+      "phase": "1. INITIALIZE (Client -> Server)",
+      "direction": "request",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {},
+          "clientInfo": {
+            "name": "mcp-claims-host-agent",
+            "version": "1.0.0"
+          }
+        }
+      },
+      "annotations": {
+        "jsonrpc": "Identifies the wire transport standard as JSON-RPC 2.0 specification.",
+        "id": "Unique request identifier (integer/string) used by the client to correlate asynchronous responses.",
+        "method": "MCP lifecycle method 'initialize' sent by the client to negotiate capabilities.",
+        "params": "Object containing client metadata, supported protocol version, and optional client capabilities."
+      }
+    },
+    {
+      "phase": "1. INITIALIZE RESPONSE (Server -> Client)",
+      "direction": "response",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {
+            "tools": {
+              "listChanged": false
+            }
+          },
+          "serverInfo": {
+            "name": "claims-platform-server",
+            "version": "1.0.0"
+          }
+        }
+      },
+      "annotations": {
+        "jsonrpc": "Protocol version header (2.0).",
+        "id": "Matching request ID (1) confirming this payload responds to the initialize request.",
+        "result": "Payload returning negotiated protocolVersion, server feature capabilities (tools), and serverInfo."
+      }
+    },
+    {
+      "phase": "2. INITIALIZED NOTIFICATION (Client -> Server)",
+      "direction": "notification",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized"
+      },
+      "annotations": {
+        "jsonrpc": "JSON-RPC 2.0 version header.",
+        "method": "One-way lifecycle notification signaling that the client has processed the initialize response and is ready for traffic.",
+        "id": "Omitted because notifications do not expect or permit a server response."
+      }
+    },
+    {
+      "phase": "3. TOOLS LIST (Client -> Server)",
+      "direction": "request",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/list"
+      },
+      "annotations": {
+        "jsonrpc": "JSON-RPC 2.0 version header.",
+        "id": "Request ID 2.",
+        "method": "Discovery method requesting all callable tools exposed by this MCP server."
+      }
+    },
+    {
+      "phase": "3. TOOLS LIST RESPONSE (Server -> Client)",
+      "direction": "response",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "tools": [
+            {
+              "name": "get_claim_status",
+              "description": "Retrieves financial amounts, claimant information, and current processing status for an insurance claim.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "claim_id": {
+                    "type": "string",
+                    "description": "Unique claim identifier (e.g. 'CLM-7001')"
+                  }
+                },
+                "required": ["claim_id"]
+              }
+            },
+            {
+              "name": "get_adjuster_notes",
+              "description": "Retrieves detailed adjuster investigation notes and incident observations for a given claim.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "claim_id": {
+                    "type": "string",
+                    "description": "Unique claim identifier (e.g. 'CLM-7001', 'CLM-7002')"
+                  }
+                },
+                "required": ["claim_id"]
+              }
+            }
+          ]
+        }
+      },
+      "annotations": {
+        "jsonrpc": "JSON-RPC 2.0 version header.",
+        "id": "Correlated request ID 2.",
+        "result": "Contains the 'tools' array where each entry defines tool name, semantic description (docstring), and JSON-Schema inputSchema."
+      }
+    },
+    {
+      "phase": "4. TOOLS CALL (Client -> Server)",
+      "direction": "request",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "tools/call",
+        "params": {
+          "name": "get_adjuster_notes",
+          "arguments": {
+            "claim_id": "CLM-7002"
+          }
+        }
+      },
+      "annotations": {
+        "jsonrpc": "JSON-RPC 2.0 version header.",
+        "id": "Request ID 3.",
+        "method": "Execution method 'tools/call' invoking a specific tool on the server.",
+        "params": "Contains target tool 'name' and verified dictionary of 'arguments' passed by the host agent."
+      }
+    },
+    {
+      "phase": "4. TOOLS CALL RESPONSE (Server -> Client)",
+      "direction": "response",
+      "raw_message": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"claim_id\": \"CLM-7002\", \"adjuster_notes\": \"Heavy torrential rainfall caused rising lake water and surface runoff to inundate basement. Excluded flood event under Section 5.2.\", \"incident_type\": \"Basement Water Damage\", \"notes_length\": 152}"
+            }
+          ],
+          "isError": false
+        }
+      },
+      "annotations": {
+        "jsonrpc": "JSON-RPC 2.0 version header.",
+        "id": "Correlated request ID 3.",
+        "result": "Contains 'content' array with serialized text payload and boolean 'isError' status flag."
+      }
+    }
+  ]
+}

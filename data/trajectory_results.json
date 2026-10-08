@@ -28,7 +28,7 @@
         "optimal_steps": 2,
         "tokens": 633,
         "cost": 0.001266,
-        "latency": 66.3172
+        "latency": 63.6695
       },
       {
         "claim_id": "CLM-7002",
@@ -57,7 +57,7 @@
         "optimal_steps": 3,
         "tokens": 697,
         "cost": 0.001394,
-        "latency": 0.3668
+        "latency": 0.2888
       },
       {
         "claim_id": "CLM-7003",
@@ -86,7 +86,7 @@
         "optimal_steps": 2,
         "tokens": 701,
         "cost": 0.001402,
-        "latency": 2.1678
+        "latency": 0.2872
       },
       {
         "claim_id": "CLM-7004",
@@ -115,7 +115,7 @@
         "optimal_steps": 2,
         "tokens": 700,
         "cost": 0.0014,
-        "latency": 0.3673
+        "latency": 0.2845
       },
       {
         "claim_id": "CLM-7005",
@@ -144,7 +144,7 @@
         "optimal_steps": 2,
         "tokens": 695,
         "cost": 0.00139,
-        "latency": 0.3695
+        "latency": 0.2805
       },
       {
         "claim_id": "CLM-7006",
@@ -173,7 +173,7 @@
         "optimal_steps": 2,
         "tokens": 696,
         "cost": 0.001392,
-        "latency": 0.3675
+        "latency": 0.2895
       },
       {
         "claim_id": "CLM-7007",
@@ -202,7 +202,7 @@
         "optimal_steps": 3,
         "tokens": 689,
         "cost": 0.001378,
-        "latency": 0.3736
+        "latency": 0.2883
       },
       {
         "claim_id": "CLM-7008",
@@ -231,7 +231,7 @@
         "optimal_steps": 2,
         "tokens": 694,
         "cost": 0.001388,
-        "latency": 0.3654
+        "latency": 0.2857
       },
       {
         "claim_id": "CLM-7009",
@@ -260,7 +260,7 @@
         "optimal_steps": 2,
         "tokens": 698,
         "cost": 0.001396,
-        "latency": 0.3914
+        "latency": 0.2856
       },
       {
         "claim_id": "CLM-7010",
@@ -289,7 +289,7 @@
         "optimal_steps": 3,
         "tokens": 700,
         "cost": 0.0014,
-        "latency": 0.3353
+        "latency": 0.2811
       }
     ],
     "outcome_pass_rate": 90.0,
@@ -300,8 +300,8 @@
     "step_efficiency": 0.95,
     "cost_p50": 0.001393,
     "cost_max": 0.001402,
-    "latency_p50": 0.3685,
-    "latency_max": 66.3172,
+    "latency_p50": 0.2864,
+    "latency_max": 63.6695,
     "total_tokens": 6903,
     "shortcut_failures": 4
   },
@@ -335,7 +335,7 @@
         "optimal_steps": 2,
         "tokens": 690,
         "cost": 0.00138,
-        "latency": 0.3723
+        "latency": 0.241
       },
       {
         "claim_id": "CLM-7002",
@@ -365,7 +365,7 @@
         "optimal_steps": 3,
         "tokens": 697,
         "cost": 0.001394,
-        "latency": 0.3767
+        "latency": 0.2941
       },
       {
         "claim_id": "CLM-7003",
@@ -394,7 +394,7 @@
         "optimal_steps": 2,
         "tokens": 701,
         "cost": 0.001402,
-        "latency": 0.3768
+        "latency": 0.3154
       },
       {
         "claim_id": "CLM-7004",
@@ -423,7 +423,7 @@
         "optimal_steps": 2,
         "tokens": 700,
         "cost": 0.0014,
-        "latency": 0.3558
+        "latency": 0.2799
       },
       {
         "claim_id": "CLM-7005",
@@ -452,7 +452,7 @@
         "optimal_steps": 2,
         "tokens": 695,
         "cost": 0.00139,
-        "latency": 0.3759
+        "latency": 0.2397
       },
       {
         "claim_id": "CLM-7006",
@@ -481,7 +481,7 @@
         "optimal_steps": 2,
         "tokens": 696,
         "cost": 0.001392,
-        "latency": 0.3778
+        "latency": 0.2866
       },
       {
         "claim_id": "CLM-7007",
@@ -511,7 +511,7 @@
         "optimal_steps": 3,
         "tokens": 689,
         "cost": 0.001378,
-        "latency": 0.3665
+        "latency": 0.2435
       },
       {
         "claim_id": "CLM-7008",
@@ -540,7 +540,7 @@
         "optimal_steps": 2,
         "tokens": 694,
         "cost": 0.001388,
-        "latency": 0.4066
+        "latency": 0.3088
       },
       {
         "claim_id": "CLM-7009",
@@ -569,7 +569,7 @@
         "optimal_steps": 2,
         "tokens": 698,
         "cost": 0.001396,
-        "latency": 0.3233
+        "latency": 0.258
       },
       {
         "claim_id": "CLM-7010",
@@ -599,7 +599,7 @@
         "optimal_steps": 3,
         "tokens": 700,
         "cost": 0.0014,
-        "latency": 0.3588
+        "latency": 0.2569
       }
     ],
     "outcome_pass_rate": 100.0,
@@ -610,8 +610,8 @@
     "step_efficiency": 0.7667,
     "cost_p50": 0.001393,
     "cost_max": 0.001402,
-    "latency_p50": 0.3741,
-    "latency_max": 0.4066,
+    "latency_p50": 0.269,
+    "latency_max": 0.3154,
     "total_tokens": 6960,
     "shortcut_failures": 0
   },
@@ -621,6 +621,6 @@
     "count_after": 0,
     "price_tokens": 57,
     "price_cost": 0.0,
-    "price_latency": 0.0056
+    "price_latency": -0.0174
   }
 }

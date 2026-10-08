@@ -130,7 +130,7 @@ def run_claim_agent(claim_id: str, force_budget_exceed: str = None) -> Dict[str,
         # If get_claim yielded actual claim info, dynamically tune args for step 3
         if tool_name == "get_claim" and "gross_claim_amount" in res:
             notes = res.get("adjuster_notes", "")
-            is_excluded = ("flood" in notes.lower() or "rising water" in notes.lower() or "mysterious disappearance" in notes.lower())
+            is_excluded = ("flood" in notes.lower() or "rising water" in notes.lower() or "mysterious disappearance" in notes.lower()) and ("no flood" not in notes.lower() and "no rising water" not in notes.lower())
             
             laps_plan[2]["args"] = {
                 "claim_id": claim_id,

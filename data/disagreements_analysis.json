@@ -4,35 +4,21 @@
     "query": "What is the required notice period for resignation?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "Section 5.2.7 Carry forward of leave and Section 5.2.8 Leaving the organization do not directly answer the question. How"
+    "answer": "Section 5.2.7 Carry forward of leave does not directly answer this question, but Section i. in the provided context stat"
   },
   {
     "id": "eval_03",
     "query": "What are the official working hours for GESCI staff?",
     "human": 1,
     "judge_v1": 0,
-    "answer": "According to section 5.1 of the provided context, the official working hours for all GESCI staff is 40 hours in a week."
+    "answer": "According to section 5.1, the official working hours for all GESCI staff is 40 hours in a week."
   },
   {
     "id": "eval_07",
     "query": "What is the probationary period length for new staff?",
     "human": 0,
     "judge_v1": 1,
-    "answer": "Based on the provided Context (3.6 Probation), the probationary period length for all staff contracts exceeding 12 month"
-  },
-  {
-    "id": "eval_08",
-    "query": "How long is the maternity leave entitlement with full pay?",
-    "human": 1,
-    "judge_v1": 0,
-    "answer": "According to section d) and the additional information, a staff member shall receive maternity leave with full pay for t"
-  },
-  {
-    "id": "eval_09",
-    "query": "What happens if an employee is recalled from annual leave due to an emergency?",
-    "human": 0,
-    "judge_v1": 1,
-    "answer": "Section 3. Recall from Leave states that if an employee is recalled from leave or their annual leave authorization is ca"
+    "answer": "Based on the provided context (3.6 Probation), the probationary period length for all staff contracts exceeding 12 month"
   },
   {
     "id": "eval_11",
@@ -63,8 +49,8 @@
     "answer": "I don't know based on the provided documents."
   },
   {
-    "id": "eval_22",
-    "query": "What is the policy for carrying forward unused annual leave into the next year?",
+    "id": "eval_23",
+    "query": "How does the policy handle international relocation shipping expenses?",
     "human": 1,
     "judge_v1": 0,
     "answer": "I don't know based on the provided documents."

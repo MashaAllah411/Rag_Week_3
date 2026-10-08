@@ -1,0 +1,1268 @@
+{
+  "summary": {
+    "single_agent": {
+      "pass_rate_pct": 90.0,
+      "latency_p50_sec": 0.29225,
+      "latency_max_sec": 70.7659,
+      "total_tokens": 6903,
+      "cost_per_claim_usd": 0.0013806
+    },
+    "multi_agent_squad": {
+      "pass_rate_pct": 100.0,
+      "latency_p50_sec": 0.0004,
+      "latency_max_sec": 0.3159,
+      "total_tokens": 6885,
+      "cost_per_claim_usd": 0.0013770000000000002
+    },
+    "token_overhead_pct": -0.3,
+    "cost_overhead_pct": -0.3
+  },
+  "single_agent_runs": [
+    {
+      "claim_id": "CLM-7001",
+      "system": "Agent Loop",
+      "passed": false,
+      "final_result": {
+        "error": "Budget terminated before completion"
+      },
+      "iterations": 3,
+      "total_tokens": 633,
+      "total_cost": 0.001266,
+      "latency_seconds": 70.7659,
+      "budget_triggered": "WALL_CLOCK_TIMEOUT (70.77s > 30.0s)",
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7001",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7001', 'claimant': 'Alice Miller', 'incident_type': 'Water Pip...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "\u26a0\ufe0f [BUDGET TERMINATION] Exceeded Wall Clock Timeout: WALL_CLOCK_TIMEOUT (70.77s > 30.0s)"
+      ],
+      "benchmark_passed": false,
+      "expected_status": "APPROVED",
+      "expected_payout": 3000.0
+    },
+    {
+      "claim_id": "CLM-7002",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7002",
+        "claim_status": "DENIED",
+        "gross_amount": 12000.0,
+        "deductible": 1000.0,
+        "net_payable": 0.0,
+        "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+      },
+      "iterations": 3,
+      "total_tokens": 697,
+      "total_cost": 0.001394,
+      "latency_seconds": 0.2875,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7002",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7002', 'claimant': 'Robert Vance', 'incident_type': 'Basement ...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7002', 'claim_status': 'DENIED', 'gross_amount': 12000.0, 'ded...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    },
+    {
+      "claim_id": "CLM-7003",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7003",
+        "claim_status": "APPROVED",
+        "gross_amount": 8500.0,
+        "deductible": 750.0,
+        "net_payable": 7750.0,
+        "explanation": "Claim APPROVED. Gross ($8500.00) minus Deductible ($750.00) = Net Payout $7750.00."
+      },
+      "iterations": 3,
+      "total_tokens": 701,
+      "total_cost": 0.001402,
+      "latency_seconds": 0.2798,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7003",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7003', 'claimant': 'Carlos Gomez', 'incident_type': 'Commercia...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7003', 'claim_status': 'APPROVED', 'gross_amount': 8500.0, 'de...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 7750.0
+    },
+    {
+      "claim_id": "CLM-7004",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7004",
+        "claim_status": "APPROVED",
+        "gross_amount": 4200.0,
+        "deductible": 500.0,
+        "net_payable": 3700.0,
+        "explanation": "Claim APPROVED. Gross ($4200.00) minus Deductible ($500.00) = Net Payout $3700.00."
+      },
+      "iterations": 3,
+      "total_tokens": 700,
+      "total_cost": 0.0014,
+      "latency_seconds": 0.2998,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7004",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7004', 'claimant': 'Diana Prince', 'incident_type': 'Roof Shin...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7004', 'claim_status': 'APPROVED', 'gross_amount': 4200.0, 'de...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 3700.0
+    },
+    {
+      "claim_id": "CLM-7005",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7005",
+        "claim_status": "APPROVED",
+        "gross_amount": 45000.0,
+        "deductible": 2500.0,
+        "net_payable": 42500.0,
+        "explanation": "Claim APPROVED. Gross ($45000.00) minus Deductible ($2500.00) = Net Payout $42500.00."
+      },
+      "iterations": 3,
+      "total_tokens": 695,
+      "total_cost": 0.00139,
+      "latency_seconds": 0.2931,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7005",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7005', 'claimant': 'Edward Stark', 'incident_type': 'Property ...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7005', 'claim_status': 'APPROVED', 'gross_amount': 45000.0, 'd...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 42500.0
+    },
+    {
+      "claim_id": "CLM-7006",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7006",
+        "claim_status": "APPROVED",
+        "gross_amount": 2800.0,
+        "deductible": 300.0,
+        "net_payable": 2500.0,
+        "explanation": "Claim APPROVED. Gross ($2800.00) minus Deductible ($300.00) = Net Payout $2500.00."
+      },
+      "iterations": 3,
+      "total_tokens": 696,
+      "total_cost": 0.001392,
+      "latency_seconds": 0.28,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7006",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7006', 'claimant': 'Fiona Gallagher', 'incident_type': 'Storef...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7006', 'claim_status': 'APPROVED', 'gross_amount': 2800.0, 'de...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 2500.0
+    },
+    {
+      "claim_id": "CLM-7007",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7007",
+        "claim_status": "DENIED",
+        "gross_amount": 25000.0,
+        "deductible": 1500.0,
+        "net_payable": 0.0,
+        "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+      },
+      "iterations": 3,
+      "total_tokens": 689,
+      "total_cost": 0.001378,
+      "latency_seconds": 0.2935,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7007",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7007', 'claimant': 'George Clark', 'incident_type': 'Coastal S...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7007', 'claim_status': 'DENIED', 'gross_amount': 25000.0, 'ded...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    },
+    {
+      "claim_id": "CLM-7008",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7008",
+        "claim_status": "APPROVED",
+        "gross_amount": 9400.0,
+        "deductible": 800.0,
+        "net_payable": 8600.0,
+        "explanation": "Claim APPROVED. Gross ($9400.00) minus Deductible ($800.00) = Net Payout $8600.00."
+      },
+      "iterations": 3,
+      "total_tokens": 694,
+      "total_cost": 0.001388,
+      "latency_seconds": 0.294,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7008",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7008', 'claimant': 'Hannah Abbott', 'incident_type': 'Inventor...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7008', 'claim_status': 'APPROVED', 'gross_amount': 9400.0, 'de...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 8600.0
+    },
+    {
+      "claim_id": "CLM-7009",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7009",
+        "claim_status": "APPROVED",
+        "gross_amount": 6100.0,
+        "deductible": 500.0,
+        "net_payable": 5600.0,
+        "explanation": "Claim APPROVED. Gross ($6100.00) minus Deductible ($500.00) = Net Payout $5600.00."
+      },
+      "iterations": 3,
+      "total_tokens": 698,
+      "total_cost": 0.001396,
+      "latency_seconds": 0.2416,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7009",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7009', 'claimant': 'Ian Malcolm', 'incident_type': 'Office Com...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7009', 'claim_status': 'APPROVED', 'gross_amount': 6100.0, 'de...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 5600.0
+    },
+    {
+      "claim_id": "CLM-7010",
+      "system": "Agent Loop",
+      "passed": true,
+      "final_result": {
+        "claim_id": "CLM-7010",
+        "claim_status": "DENIED",
+        "gross_amount": 15000.0,
+        "deductible": 1000.0,
+        "net_payable": 0.0,
+        "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+      },
+      "iterations": 3,
+      "total_tokens": 700,
+      "total_cost": 0.0014,
+      "latency_seconds": 0.2914,
+      "budget_triggered": null,
+      "execution_log": [
+        "[AGENT START] Processing claim CLM-7010",
+        "  Lap 1: Tool 'get_claim' executed. Result: {'claim_id': 'CLM-7010', 'claimant': 'Julia Roberts', 'incident_type': 'Unexplai...",
+        "  Lap 2: Tool 'search_policy' executed. Result: [{'id': 'commercial-vehicles-package-policy-93ee460add:chunk_1', 'text': 'to the...",
+        "  Lap 3: Tool 'compute_payout' executed. Result: {'claim_id': 'CLM-7010', 'claim_status': 'DENIED', 'gross_amount': 15000.0, 'ded...",
+        "[AGENT SUCCESS] Completed payout computation in 3 laps."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    }
+  ],
+  "multi_agent_runs": [
+    {
+      "claim_id": "CLM-7001",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 3000.0,
+      "policy_clause": "N/A",
+      "total_tokens": 505,
+      "total_cost": 0.00101,
+      "latency_seconds": 0.0004,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_59437093",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7001",
+              "incident_type": "Water Pipe Burst",
+              "adjuster_notes": "Water pipe burst in kitchen causing cabinet damage. No flood or rising water involved. Recommended approval."
+            },
+            "timestamp": 1791445465.1017969,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_59437093",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7001",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.1019235,
+            "tokens_used": 97,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_82521a41",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7001",
+              "claim_status": "APPROVED",
+              "gross_amount": 3500.0,
+              "deductible": 500.0
+            },
+            "timestamp": 1791445465.101986,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_82521a41",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7001",
+              "claim_status": "APPROVED",
+              "gross_amount": 3500.0,
+              "deductible": 500.0,
+              "net_payable": 3000.0,
+              "explanation": "Claim APPROVED. Gross ($3500.00) minus Deductible ($500.00) = Net Payout $3000.00."
+            },
+            "timestamp": 1791445465.1020732,
+            "tokens_used": 134,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7001",
+        "  Manager Step 1: Retrieved claim record for CLM-7001.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $3000.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 3000.0
+    },
+    {
+      "claim_id": "CLM-7002",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "DENIED",
+      "net_payable": 0.0,
+      "policy_clause": "Section 5.2",
+      "total_tokens": 1164,
+      "total_cost": 0.002328,
+      "latency_seconds": 0.2557,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_195ba6e6",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7002",
+              "incident_type": "Basement Water Damage",
+              "adjuster_notes": "Heavy torrential rainfall caused rising lake water and surface runoff to inundate basement. Excluded flood event under Section 5.2."
+            },
+            "timestamp": 1791445465.102303,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_195ba6e6",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7002",
+              "coverage_verdict": "DENIED",
+              "is_excluded": true,
+              "exclusion_clause": "Section 5.2",
+              "reasoning": "Incident involved rising lake/surface water, excluded under Section 5.2 (Flood & Rising Water)."
+            },
+            "timestamp": 1791445465.3575964,
+            "tokens_used": 757,
+            "latency_seconds": 0.2552,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_5ffba4f1",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7002",
+              "claim_status": "DENIED",
+              "gross_amount": 12000.0,
+              "deductible": 1000.0
+            },
+            "timestamp": 1791445465.3577175,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_5ffba4f1",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7002",
+              "claim_status": "DENIED",
+              "gross_amount": 12000.0,
+              "deductible": 1000.0,
+              "net_payable": 0.0,
+              "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+            },
+            "timestamp": 1791445465.3578553,
+            "tokens_used": 120,
+            "latency_seconds": 0.0001,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7002",
+        "  Manager Step 1: Retrieved claim record for CLM-7002.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = DENIED, Clause = Section 5.2.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $0.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    },
+    {
+      "claim_id": "CLM-7003",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 7750.0,
+      "policy_clause": "N/A",
+      "total_tokens": 517,
+      "total_cost": 0.001034,
+      "latency_seconds": 0.0004,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_1a5fd463",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7003",
+              "incident_type": "Commercial Vehicle Collision",
+              "adjuster_notes": "Delivery van collided with roadside barrier during storm. Driver was authorized. No policy exclusions triggered."
+            },
+            "timestamp": 1791445465.3581836,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_1a5fd463",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7003",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.3583,
+            "tokens_used": 101,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_af708ce7",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7003",
+              "claim_status": "APPROVED",
+              "gross_amount": 8500.0,
+              "deductible": 750.0
+            },
+            "timestamp": 1791445465.3583665,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_af708ce7",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7003",
+              "claim_status": "APPROVED",
+              "gross_amount": 8500.0,
+              "deductible": 750.0,
+              "net_payable": 7750.0,
+              "explanation": "Claim APPROVED. Gross ($8500.00) minus Deductible ($750.00) = Net Payout $7750.00."
+            },
+            "timestamp": 1791445465.3584802,
+            "tokens_used": 134,
+            "latency_seconds": 0.0001,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7003",
+        "  Manager Step 1: Retrieved claim record for CLM-7003.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $7750.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 7750.0
+    },
+    {
+      "claim_id": "CLM-7004",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 3700.0,
+      "policy_clause": "N/A",
+      "total_tokens": 515,
+      "total_cost": 0.00103,
+      "latency_seconds": 0.0004,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_9f4d873c",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7004",
+              "incident_type": "Roof Shingle Storm Damage",
+              "adjuster_notes": "Windstorm blew off roof shingles causing water seepage into attic. Weather report verifies wind gusts over 50mph."
+            },
+            "timestamp": 1791445465.3587568,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_9f4d873c",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7004",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.3588521,
+            "tokens_used": 101,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_b177f402",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7004",
+              "claim_status": "APPROVED",
+              "gross_amount": 4200.0,
+              "deductible": 500.0
+            },
+            "timestamp": 1791445465.358911,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_b177f402",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7004",
+              "claim_status": "APPROVED",
+              "gross_amount": 4200.0,
+              "deductible": 500.0,
+              "net_payable": 3700.0,
+              "explanation": "Claim APPROVED. Gross ($4200.00) minus Deductible ($500.00) = Net Payout $3700.00."
+            },
+            "timestamp": 1791445465.3590126,
+            "tokens_used": 134,
+            "latency_seconds": 0.0001,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7004",
+        "  Manager Step 1: Retrieved claim record for CLM-7004.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $3700.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 3700.0
+    },
+    {
+      "claim_id": "CLM-7005",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 42500.0,
+      "policy_clause": "N/A",
+      "total_tokens": 499,
+      "total_cost": 0.000998,
+      "latency_seconds": 0.0003,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_f0b4ec9d",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7005",
+              "incident_type": "Property Fire",
+              "adjuster_notes": "Electrical short circuit caused warehouse fire. Fire department report attached. Arson ruled out."
+            },
+            "timestamp": 1791445465.3592546,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_f0b4ec9d",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7005",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.3593411,
+            "tokens_used": 94,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_9d818524",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7005",
+              "claim_status": "APPROVED",
+              "gross_amount": 45000.0,
+              "deductible": 2500.0
+            },
+            "timestamp": 1791445465.3593965,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_9d818524",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7005",
+              "claim_status": "APPROVED",
+              "gross_amount": 45000.0,
+              "deductible": 2500.0,
+              "net_payable": 42500.0,
+              "explanation": "Claim APPROVED. Gross ($45000.00) minus Deductible ($2500.00) = Net Payout $42500.00."
+            },
+            "timestamp": 1791445465.359501,
+            "tokens_used": 136,
+            "latency_seconds": 0.0001,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7005",
+        "  Manager Step 1: Retrieved claim record for CLM-7005.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $42500.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 42500.0
+    },
+    {
+      "claim_id": "CLM-7006",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 2500.0,
+      "policy_clause": "N/A",
+      "total_tokens": 500,
+      "total_cost": 0.001,
+      "latency_seconds": 0.0003,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_fcd025d7",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7006",
+              "incident_type": "Storefront Vandalism",
+              "adjuster_notes": "Graffiti and shattered window glass on storefront. Police report filed. Covered property damage."
+            },
+            "timestamp": 1791445465.3597403,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_fcd025d7",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7006",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.3598225,
+            "tokens_used": 95,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_816da0f3",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7006",
+              "claim_status": "APPROVED",
+              "gross_amount": 2800.0,
+              "deductible": 300.0
+            },
+            "timestamp": 1791445465.3598766,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_816da0f3",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7006",
+              "claim_status": "APPROVED",
+              "gross_amount": 2800.0,
+              "deductible": 300.0,
+              "net_payable": 2500.0,
+              "explanation": "Claim APPROVED. Gross ($2800.00) minus Deductible ($300.00) = Net Payout $2500.00."
+            },
+            "timestamp": 1791445465.3599694,
+            "tokens_used": 134,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7006",
+        "  Manager Step 1: Retrieved claim record for CLM-7006.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $2500.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 2500.0
+    },
+    {
+      "claim_id": "CLM-7007",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "DENIED",
+      "net_payable": 0.0,
+      "policy_clause": "Section 5.2",
+      "total_tokens": 1079,
+      "total_cost": 0.002158,
+      "latency_seconds": 0.3159,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_1e9bdbc7",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7007",
+              "incident_type": "Coastal Storm Surge",
+              "adjuster_notes": "Hurricane surge caused sea water to flood ground floor. Coastal flood exclusion Section 8.4 applies."
+            },
+            "timestamp": 1791445465.3601797,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_1e9bdbc7",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7007",
+              "coverage_verdict": "DENIED",
+              "is_excluded": true,
+              "exclusion_clause": "Section 5.2",
+              "reasoning": "Incident involved rising lake/surface water, excluded under Section 5.2 (Flood & Rising Water)."
+            },
+            "timestamp": 1791445465.6759505,
+            "tokens_used": 688,
+            "latency_seconds": 0.3157,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_b0a540a7",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7007",
+              "claim_status": "DENIED",
+              "gross_amount": 25000.0,
+              "deductible": 1500.0
+            },
+            "timestamp": 1791445465.6759946,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_b0a540a7",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7007",
+              "claim_status": "DENIED",
+              "gross_amount": 25000.0,
+              "deductible": 1500.0,
+              "net_payable": 0.0,
+              "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+            },
+            "timestamp": 1791445465.6760283,
+            "tokens_used": 120,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7007",
+        "  Manager Step 1: Retrieved claim record for CLM-7007.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = DENIED, Clause = Section 5.2.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $0.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    },
+    {
+      "claim_id": "CLM-7008",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 8600.0,
+      "policy_clause": "N/A",
+      "total_tokens": 496,
+      "total_cost": 0.000992,
+      "latency_seconds": 0.0001,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_909795f6",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7008",
+              "incident_type": "Inventory Theft",
+              "adjuster_notes": "Forced entry into retail storage unit after hours. Police report confirms broken lock mechanism."
+            },
+            "timestamp": 1791445465.6761396,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_909795f6",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7008",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.676166,
+            "tokens_used": 94,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_c32ae2d4",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7008",
+              "claim_status": "APPROVED",
+              "gross_amount": 9400.0,
+              "deductible": 800.0
+            },
+            "timestamp": 1791445465.6761792,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_c32ae2d4",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7008",
+              "claim_status": "APPROVED",
+              "gross_amount": 9400.0,
+              "deductible": 800.0,
+              "net_payable": 8600.0,
+              "explanation": "Claim APPROVED. Gross ($9400.00) minus Deductible ($800.00) = Net Payout $8600.00."
+            },
+            "timestamp": 1791445465.6762064,
+            "tokens_used": 134,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7008",
+        "  Manager Step 1: Retrieved claim record for CLM-7008.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $8600.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 8600.0
+    },
+    {
+      "claim_id": "CLM-7009",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "APPROVED",
+      "net_payable": 5600.0,
+      "policy_clause": "N/A",
+      "total_tokens": 509,
+      "total_cost": 0.001018,
+      "latency_seconds": 0.0005,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_ce255505",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7009",
+              "incident_type": "Office Computer Equipment Surge",
+              "adjuster_notes": "Lightning strike damaged server power supply. Surge protector failed. Covered electrical breakdown."
+            },
+            "timestamp": 1791445465.6764169,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_ce255505",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7009",
+              "coverage_verdict": "APPROVED",
+              "is_excluded": false,
+              "exclusion_clause": "N/A",
+              "reasoning": "No policy exclusion triggers identified in adjuster notes. Incident is covered."
+            },
+            "timestamp": 1791445465.6765847,
+            "tokens_used": 99,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_3b5e6f26",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7009",
+              "claim_status": "APPROVED",
+              "gross_amount": 6100.0,
+              "deductible": 500.0
+            },
+            "timestamp": 1791445465.6766582,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_3b5e6f26",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7009",
+              "claim_status": "APPROVED",
+              "gross_amount": 6100.0,
+              "deductible": 500.0,
+              "net_payable": 5600.0,
+              "explanation": "Claim APPROVED. Gross ($6100.00) minus Deductible ($500.00) = Net Payout $5600.00."
+            },
+            "timestamp": 1791445465.676769,
+            "tokens_used": 134,
+            "latency_seconds": 0.0001,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7009",
+        "  Manager Step 1: Retrieved claim record for CLM-7009.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = APPROVED, Clause = N/A.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $5600.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "APPROVED",
+      "expected_payout": 5600.0
+    },
+    {
+      "claim_id": "CLM-7010",
+      "system": "Multi-Agent Squad (Manager + 2 Specialists)",
+      "passed": true,
+      "final_status": "DENIED",
+      "net_payable": 0.0,
+      "policy_clause": "Section 12.1",
+      "total_tokens": 1101,
+      "total_cost": 0.002202,
+      "latency_seconds": 0.2859,
+      "a2a_transcripts": [
+        {
+          "step": "Policy Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "policy-coverage-specialist",
+            "task_id": "task_a3b11726",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7010",
+              "incident_type": "Unexplained Stock Loss",
+              "adjuster_notes": "Audit revealed missing stock inventory. No forced entry or burglary evidence found. Mysterious disappearance exclusion Section 12.1 applies."
+            },
+            "timestamp": 1791445465.6770048,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "policy-coverage-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_a3b11726",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7010",
+              "coverage_verdict": "DENIED",
+              "is_excluded": true,
+              "exclusion_clause": "Section 12.1",
+              "reasoning": "Incident involved unexplained stock inventory loss, excluded under Section 12.1."
+            },
+            "timestamp": 1791445465.9627433,
+            "tokens_used": 689,
+            "latency_seconds": 0.2857,
+            "error": null
+          }
+        },
+        {
+          "step": "Payout Specialist Hand-Off",
+          "request": {
+            "sender": "claims-squad-manager",
+            "recipient": "payout-calculation-specialist",
+            "task_id": "task_387d1522",
+            "lifecycle": "SUBMITTED",
+            "payload": {
+              "claim_id": "CLM-7010",
+              "claim_status": "DENIED",
+              "gross_amount": 15000.0,
+              "deductible": 1000.0
+            },
+            "timestamp": 1791445465.9627905,
+            "tokens_used": 0,
+            "latency_seconds": 0.0,
+            "error": null
+          },
+          "response": {
+            "sender": "payout-calculation-specialist",
+            "recipient": "claims-squad-manager",
+            "task_id": "task_387d1522",
+            "lifecycle": "COMPLETED",
+            "payload": {
+              "claim_id": "CLM-7010",
+              "claim_status": "DENIED",
+              "gross_amount": 15000.0,
+              "deductible": 1000.0,
+              "net_payable": 0.0,
+              "explanation": "Claim DENIED due to policy exclusion. Net payout is $0.00."
+            },
+            "timestamp": 1791445465.9628258,
+            "tokens_used": 120,
+            "latency_seconds": 0.0,
+            "error": null
+          }
+        }
+      ],
+      "execution_log": [
+        "[MANAGER START] Claims Squad initialized for claim CLM-7010",
+        "  Manager Step 1: Retrieved claim record for CLM-7010.",
+        "  Manager Step 2 (A2A -> Policy Specialist): Delegating exclusion review.",
+        "  Policy Specialist -> Manager: Verdict = DENIED, Clause = Section 12.1.",
+        "  Manager Step 3 (A2A -> Payout Specialist): Delegating settlement computation.",
+        "  Payout Specialist -> Manager: Net Payable = $0.00.",
+        "[MANAGER SUCCESS] Final settlement synthesized in Multi-Agent squad."
+      ],
+      "benchmark_passed": true,
+      "expected_status": "DENIED",
+      "expected_payout": 0.0
+    }
+  ]
+}

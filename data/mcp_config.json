@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "policy-document-server": {
+      "command": "python",
+      "args": ["-m", "rag.mcp.policy_server"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    },
+    "claims-platform-server": {
+      "command": "python",
+      "args": ["-m", "rag.mcp.claims_server"],
+      "env": {
+        "PYTHONPATH": "."
+      }
+    }
+  }
+}
