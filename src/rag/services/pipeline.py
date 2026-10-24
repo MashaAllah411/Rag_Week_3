@@ -229,7 +229,7 @@ def run_pipeline(
 
     # ── Step 5: Log PII-Redacted Trace (Week 5 Requirement) ──
     try:
-        from tracer import log_trace
+        from rag.observability.tracer import log_trace
         log_trace(
             query=question,
             retrieved_chunks=raw_chunks,

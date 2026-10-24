@@ -1,18 +1,24 @@
 # ============================================================
-# app/routes/evaluate.py
+# src/rag/api/routes/evaluate.py
 #
-# POST /api/evaluate   — run live evaluation
-# GET  /api/evaluate/results — return pre-computed results
-# GET  /api/evaluate/metrics — return before/after summary
+# Evaluation endpoints: retrieval metrics, live runs,
+# deterministic assertions, and LLM judge evaluation.
 # ============================================================
 
 import json
 import os
 import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from rag.models.schemas import EvaluateRequest, EvaluateResponse, PerQuestionResult
+from rag.models.schemas import (
+    EvaluateRequest,
+    EvaluateResponse,
+    PerQuestionResult,
+    JudgeEvalRequest,
+    AssertionCheckRequest
+)
 from rag.services.failure_labeler import get_aggregate_metrics, get_all_failure_labels
 from rag.config import BASELINE_RESULTS_PATH, HYBRID_RESULTS_PATH
+from rag.services.evaluation_service import run_deterministic_assertions, run_judge_evaluation
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -48,14 +54,12 @@ async def get_results(mode: str):
     if not data:
         raise HTTPException(status_code=404, detail=f"No results found for mode '{mode}'.")
 
-    # Merge failure labels into per_question
     failure_data = {item["question"]: item for item in get_all_failure_labels()}
 
     per_q = []
     for pq in data.get("per_question", []):
         q = pq["question"]
         fd = failure_data.get(q, {})
-        mode_key = "hybrid" if mode == "hybrid" else "baseline"
         effective_label = fd.get("effective_label") or fd.get("hybrid", {}).get("auto_label")
         per_q.append(PerQuestionResult(
             question=pq["question"],
@@ -81,8 +85,7 @@ async def get_results(mode: str):
 @router.get("/metrics", summary="Before/after improvement metrics")
 async def get_metrics():
     """
-    Returns the side-by-side before (semantic) vs after (hybrid) metrics.
-    This is the core proof-of-fix number required by Week 4 M2.
+    Returns side-by-side before (semantic) vs after (hybrid) metrics.
     """
     return get_aggregate_metrics()
 
@@ -93,9 +96,7 @@ async def get_metrics():
 )
 async def run_evaluation(request: EvaluateRequest, background_tasks: BackgroundTasks):
     """
-    Triggers a live evaluation run.
-    Saves results to baseline_results.json or hybrid_results.json.
-    Runs in the background — poll /api/evaluate/results/{mode} for output.
+    Triggers a live evaluation run in the background.
     """
     def _run(mode: str, top_k: int):
         try:
@@ -112,3 +113,20 @@ async def run_evaluation(request: EvaluateRequest, background_tasks: BackgroundT
                    f"Poll GET /api/evaluate/results/{request.mode} for results.",
         "mode": request.mode
     }
+
+
+@router.post("/assertions", summary="Run deterministic assertions on text")
+async def check_assertions(request: AssertionCheckRequest):
+    """Runs 4 deterministic regex assertions: claim format, date of loss, deductible, and exclusion citation."""
+    return run_deterministic_assertions(request.text, is_denial=request.is_denial)
+
+
+@router.post("/judge", summary="Run LLM Judge (V1 or V2 calibration)")
+async def evaluate_with_judge(request: JudgeEvalRequest):
+    """Runs calibrated LLM Judge to assess grounding and correctness."""
+    return run_judge_evaluation(
+        query=request.query,
+        context=request.context,
+        answer=request.answer,
+        judge_version=request.judge_version
+    )

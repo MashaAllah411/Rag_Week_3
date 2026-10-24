@@ -5,7 +5,7 @@ import logging
 from typing import List, Dict
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
 from pypdf import PdfReader
-from rag.config import RESOURCES_DIR, PINECONE_INDEX_NAME
+from rag.config import RESOURCES_DIR, PINECONE_INDEX_NAME, EMBEDDING_MODEL
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -17,7 +17,7 @@ _MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 def _get_suggested_questions(filename: str) -> List[Dict[str, str]]:
     """Return tailored quick questions based on document context."""
     fname_lower = filename.lower()
-    if "insurance" in fname_lower or "car" in fname_lower or "policy" in fname_lower:
+    if "insurance" in fname_lower or "car" in fname_lower or "policy" in fname_lower or "vehicle" in fname_lower:
         return [
             {"label": "IDV Depreciation?", "query": "What is the schedule of depreciation for fixing IDV of the vehicle?"},
             {"label": "Zero Dep Cover?", "query": "What are the rules and exclusions for Depreciation Reimbursement add-on cover?"},
@@ -45,7 +45,6 @@ def _get_suggested_questions(filename: str) -> List[Dict[str, str]]:
 def _format_display_title(filename: str) -> str:
     """Format a filename into a human-readable title."""
     name = os.path.splitext(filename)[0]
-    # Split camelCase or PascalCase or snake_case / kebab-case
     words = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z]|\d|\W|$)|\d+', name)
     if words:
         return " ".join(w.capitalize() for w in words)
@@ -85,7 +84,7 @@ async def list_documents():
                 "pages": num_pages,
                 "status": "indexed",
                 "vector_index": PINECONE_INDEX_NAME or "not configured",
-                "embedding_model": "all-MiniLM-L6-v2",
+                "embedding_model": EMBEDDING_MODEL,
                 "chunking_strategy": "fixed-size (900 chars, 150 overlap)",
                 "suggested_questions": questions,
             }
@@ -162,3 +161,48 @@ async def delete_document(filename: str):
 
     return {"status": "deleted", "filename": safe_filename}
 
+
+@router.post("/reindex", summary="Re-index all documents in resources/")
+async def reindex_all_docs(background_tasks: BackgroundTasks):
+    """Re-runs chunking, embedding and Pinecone upsert for all documents."""
+    def _do_reindex():
+        try:
+            from rag.scripts.dataprocessor import reindex_all
+            from rag.core.retrieval.bm25 import reset_bm25_index
+            reindex_all()
+            reset_bm25_index()
+            logger.info("Re-indexing completed successfully.")
+        except Exception as e:
+            logger.error(f"Re-indexing failed: {e}", exc_info=True)
+
+    background_tasks.add_task(_do_reindex)
+    return {"status": "started", "message": "Re-indexing has started in background."}
+
+
+@router.get("/{filename}/chunks", summary="Inspect chunks for a specific document")
+async def inspect_document_chunks(filename: str):
+    """Returns chunk count and preview of chunks for a document."""
+    safe_filename = os.path.basename(filename)
+    document_path = os.path.join(_RESOURCES_DIR, safe_filename)
+    if not os.path.isfile(document_path):
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    from rag.core.ingest.pdfreader import read_pdf
+    from rag.core.ingest.chunker import chunk_pages
+    pages = read_pdf(document_path)
+    chunks = chunk_pages(pages)
+
+    previews = []
+    for idx, c in enumerate(chunks[:20]):
+        previews.append({
+            "chunk_index": idx,
+            "length": len(c),
+            "preview": c[:250] + "..." if len(c) > 250 else c
+        })
+
+    return {
+        "filename": safe_filename,
+        "total_pages": len(pages),
+        "total_chunks": len(chunks),
+        "sample_chunks": previews
+    }

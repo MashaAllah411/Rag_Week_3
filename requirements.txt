@@ -11,5 +11,8 @@ numpy
 pytesseract
 Pillow
 jinja2
+streamlit
+requests
+httpx
 pytest
 reportlab

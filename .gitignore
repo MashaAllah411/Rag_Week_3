@@ -1,19 +1,30 @@
-# Environment variables (contains API keys - never push this!)
+# Environment variables (contains API keys - never commit!)
 .env
+.env.*
+!.env.example
 
-# Python cache
+# Python cache & compiled bytecode
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+*.egg-info/
+dist/
+build/
 
 # Virtual environments
 venv/
 env/
 .venv/
 
-# HuggingFace model cache
+# Logs & Traces
+logs/
+*.log
+budget_termination.log
+
+# HuggingFace & Pytest cache
 .cache/
+.pytest_cache/
 
 # OS files
 .DS_Store
@@ -22,3 +33,7 @@ Thumbs.db
 # IDE files
 .vscode/
 .idea/
+
+# Local backup directories
+_backup/
+*_backup/

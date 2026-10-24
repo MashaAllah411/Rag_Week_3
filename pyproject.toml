@@ -4,13 +4,33 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rag-week-3"
-version = "1.0.0"
-description = "RAG application with hybrid retrieval, reranking, and MMR."
+version = "2.0.0"
+description = "Production-style Insurance Policy & Claims RAG application with hybrid retrieval, reranking, agent triage, MCP, and multi-agent protocol."
 requires-python = ">=3.10"
-dependencies = ["fastapi", "uvicorn[standard]", "python-multipart", "pypdf", "sentence-transformers", "pinecone", "python-dotenv", "ollama", "rank-bm25", "numpy", "pytesseract", "Pillow", "jinja2"]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "pypdf",
+    "sentence-transformers",
+    "pinecone",
+    "python-dotenv",
+    "ollama",
+    "rank-bm25",
+    "numpy",
+    "pytesseract",
+    "Pillow",
+    "jinja2",
+    "streamlit",
+    "requests",
+    "httpx"
+]
 
 [project.optional-dependencies]
-dev = ["pytest", "reportlab"]
+dev = [
+    "pytest",
+    "reportlab"
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
