@@ -3,9 +3,10 @@ import os
 import re
 import logging
 from typing import List, Dict
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel, Field
 from pypdf import PdfReader
-from rag.config import RESOURCES_DIR, PINECONE_INDEX_NAME, EMBEDDING_MODEL
+from rag.config import RESOURCES_DIR, VECTOR_STORE_COLLECTION, EMBEDDING_MODEL
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -83,7 +84,7 @@ async def list_documents():
                 "size_kb": size_kb,
                 "pages": num_pages,
                 "status": "indexed",
-                "vector_index": PINECONE_INDEX_NAME or "not configured",
+                "vector_index": VECTOR_STORE_COLLECTION,
                 "embedding_model": EMBEDDING_MODEL,
                 "chunking_strategy": "fixed-size (900 chars, 150 overlap)",
                 "suggested_questions": questions,
@@ -97,8 +98,8 @@ async def list_documents():
         "active_document": active_doc,
         "documents": docs,
         "count": len(docs),
-        "vector_db": "Pinecone",
-        "index_name": PINECONE_INDEX_NAME or "not configured",
+        "vector_db": "ChromaDB",
+        "index_name": VECTOR_STORE_COLLECTION,
     }
 
 
@@ -126,8 +127,8 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
 
     def index_upload(path: str) -> None:
         try:
-            from rag.scripts.dataprocessor import run
-            from rag.core.retrieval.bm25 import reset_bm25_index
+            from rag.ingestion.indexer import run
+            from rag.retrieval.bm25 import reset_bm25_index
             run(path)
             reset_bm25_index()
             logger.info("Uploaded document indexed: %s", filename)
@@ -140,7 +141,7 @@ async def upload_document(background_tasks: BackgroundTasks, file: UploadFile = 
 
 @router.delete("/{filename}", summary="Delete a document and its indexed chunks")
 async def delete_document(filename: str):
-    """Delete one locally stored PDF and all Pinecone vectors linked to it."""
+    """Delete one locally stored PDF and all vectors linked to it."""
     safe_filename = os.path.basename(filename)
     if safe_filename != filename or not safe_filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Invalid document filename.")
@@ -150,9 +151,9 @@ async def delete_document(filename: str):
         raise HTTPException(status_code=404, detail="Document not found.")
 
     try:
-        from rag.infra.vectorstore import delete_document_from_pinecone
-        from rag.core.retrieval.bm25 import reset_bm25_index
-        delete_document_from_pinecone(safe_filename)
+        from rag.storage.vectorstore import delete_document
+        from rag.retrieval.bm25 import reset_bm25_index
+        delete_document(safe_filename)
         os.remove(document_path)
         reset_bm25_index()
     except Exception as exc:
@@ -164,11 +165,11 @@ async def delete_document(filename: str):
 
 @router.post("/reindex", summary="Re-index all documents in resources/")
 async def reindex_all_docs(background_tasks: BackgroundTasks):
-    """Re-runs chunking, embedding and Pinecone upsert for all documents."""
+    """Re-runs chunking, embedding and vector-store upsert for all documents."""
     def _do_reindex():
         try:
-            from rag.scripts.dataprocessor import reindex_all
-            from rag.core.retrieval.bm25 import reset_bm25_index
+            from rag.ingestion.indexer import reindex_all
+            from rag.retrieval.bm25 import reset_bm25_index
             reindex_all()
             reset_bm25_index()
             logger.info("Re-indexing completed successfully.")
@@ -180,17 +181,30 @@ async def reindex_all_docs(background_tasks: BackgroundTasks):
 
 
 @router.get("/{filename}/chunks", summary="Inspect chunks for a specific document")
-async def inspect_document_chunks(filename: str):
-    """Returns chunk count and preview of chunks for a document."""
+async def inspect_document_chunks(
+    filename: str,
+    strategy: str = Query(default="fixed", pattern="^(fixed|keyword|semantic)$"),
+    chunk_size: int = Query(default=900, ge=200, le=4000),
+    chunk_overlap: int = Query(default=150, ge=0, le=1000),
+):
+    """Returns chunk count and preview of chunks for a document (Week 3: chunking strategies)."""
     safe_filename = os.path.basename(filename)
     document_path = os.path.join(_RESOURCES_DIR, safe_filename)
     if not os.path.isfile(document_path):
         raise HTTPException(status_code=404, detail="Document not found.")
 
-    from rag.core.ingest.pdfreader import read_pdf
-    from rag.core.ingest.chunker import chunk_pages
+    from rag.ingestion.pdfreader import read_pdf
+    from rag.ingestion.chunker import chunk_document
     pages = read_pdf(document_path)
-    chunks = chunk_pages(pages)
+    embed_fn = None
+    if strategy == "semantic":
+        from rag.storage.embedder import embed_texts
+        embed_fn = embed_texts
+    try:
+        chunks = chunk_document(pages, strategy, embed_fn=embed_fn,
+                                chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
     previews = []
     for idx, c in enumerate(chunks[:20]):
@@ -199,10 +213,60 @@ async def inspect_document_chunks(filename: str):
             "length": len(c),
             "preview": c[:250] + "..." if len(c) > 250 else c
         })
+    lengths = [len(c) for c in chunks] or [0]
 
     return {
         "filename": safe_filename,
+        "strategy": strategy,
+        "chunk_size": chunk_size,
+        "chunk_overlap": chunk_overlap,
         "total_pages": len(pages),
         "total_chunks": len(chunks),
+        "avg_length": round(sum(lengths) / len(lengths), 1),
         "sample_chunks": previews
     }
+
+
+class ChunkCompareRequest(BaseModel):
+    query: str = Field(..., min_length=3)
+    expected_text: str = Field(..., min_length=2, description="Phrase that answers the query")
+    sizes: List[int] = Field(default=[300, 600, 900, 1500], min_length=2, max_length=8)
+
+
+@router.post("/{filename}/chunk-compare", summary="Compare chunk sizes: does BM25 find the answer, and at what rank?")
+async def compare_chunk_sizes(filename: str, request: ChunkCompareRequest):
+    """Week 3: try several chunk sizes and see which still lets the answer be found.
+
+    Uses BM25 keyword ranking only, so it is instant and needs no embedding model or LLM.
+    """
+    safe_filename = os.path.basename(filename)
+    document_path = os.path.join(_RESOURCES_DIR, safe_filename)
+    if not os.path.isfile(document_path):
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    from rank_bm25 import BM25Okapi
+    from rag.ingestion.pdfreader import read_pdf
+    from rag.ingestion.chunker import chunk_pages
+    pages = read_pdf(document_path)
+    norm = lambda t: re.sub(r"\s+", " ", t).strip().lower()
+    target = norm(request.expected_text)
+
+    rows = []
+    for size in request.sizes:
+        overlap = max(0, min(size // 6, size - 1))
+        chunks = [c for c in chunk_pages(pages, chunk_size=size, chunk_overlap=overlap) if c.strip()]
+        if not chunks:
+            continue
+        scores = BM25Okapi([c.lower().split() for c in chunks]).get_scores(request.query.lower().split())
+        order = sorted(range(len(chunks)), key=lambda i: scores[i], reverse=True)
+        holders = {i for i, c in enumerate(chunks) if target in norm(c)}
+        rank = next((pos for pos, i in enumerate(order, start=1) if i in holders), None)
+        rows.append({
+            "chunk_size": size, "overlap": overlap, "chunks": len(chunks),
+            "avg_length": round(sum(len(c) for c in chunks) / len(chunks), 1),
+            "answer_in_a_chunk": bool(holders), "answer_chunk_rank": rank,
+            "found_in_top3": bool(rank and rank <= 3),
+        })
+    return {"filename": safe_filename, "query": request.query, "expected_text": request.expected_text,
+            "results": rows,
+            "reading": "Too small: the answer is split across chunks. Too large: the answer is buried in text about other things. The best size keeps the answer intact and ranked near the top."}

@@ -32,7 +32,7 @@ POLICY_CLAUSES = {
 def search_policy_handler(arguments: Dict[str, Any]) -> List[Dict[str, Any]]:
     query = arguments.get("query", "")
     try:
-        from rag.core.retrieval.hybrid_retriever import hybrid_search
+        from rag.retrieval.hybrid_retriever import hybrid_search
         results = hybrid_search(query, top_k=3)
         return [{"id": r["id"], "text": r["text"]} for r in results]
     except Exception:

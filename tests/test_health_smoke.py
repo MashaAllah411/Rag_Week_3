@@ -34,10 +34,16 @@ def test_system_status_endpoint():
     data = resp.json()
     assert "components" in data
     assert "config_masked" in data
-    assert "PINECONE_API_KEY" in data["config_masked"]
-    # Ensure raw secret is not leaked
-    raw_key = data["config_masked"]["PINECONE_API_KEY"]
-    assert "pcsk_3zQX7q_B1h5gQGWe" not in raw_key or "****" in raw_key
+    # Secrets must never be echoed: any secret-looking setting is absent or masked.
+    for name, value in data["config_masked"].items():
+        if any(word in name.upper() for word in ("KEY", "TOKEN", "SECRET", "PASSWORD")):
+            assert value in ("not set", "****") or "*" in str(value)
+    # The live open-source stack report is present and names each tool.
+    tools = {item["tool"].split(" ")[0] for item in data["open_source_stack"]}
+    assert {"ChromaDB", "OpenTelemetry"} <= tools
+    # No hosted vector service remains in the live components or configuration.
+    assert "pinecone" not in str(data["components"]).lower()
+    assert "pinecone" not in str(data["config_masked"]).lower()
 
 
 def test_documents_list_endpoint():

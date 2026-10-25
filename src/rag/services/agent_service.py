@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional
 from rag.agent.agent import run_claim_agent, MAX_ITERATIONS, MAX_TOKENS, MAX_COST, WALL_CLOCK_TIMEOUT
 from rag.agent.workflow import run_claim_workflow
 from rag.agent.tools import MOCK_CLAIMS_DB
-from rag.agent.trajectory_eval import evaluate_trajectory_run, EXPECTED_TRAJECTORIES
+from rag.evaluation.trajectory_eval import evaluate_trajectory_run, EXPECTED_TRAJECTORIES
 
 
 def get_available_claims() -> List[Dict[str, Any]]:

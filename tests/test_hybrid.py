@@ -1,4 +1,4 @@
-from rag.core.retrieval.hybrid_retriever import RRF_K
+from rag.retrieval.hybrid_retriever import RRF_K
 
 
 def test_rrf_rewards_document_returned_by_both_retrievers():

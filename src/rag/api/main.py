@@ -7,11 +7,9 @@
 # ============================================================
 
 import logging
-from pathlib import Path
-from fastapi import FastAPI, Request
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from rag.config import FRONTEND_ORIGINS
 
@@ -33,20 +31,42 @@ from rag.api.routes import (
     mcp,
     multi_agent,
     observability,
-    system
+    system,
+    foundations,
+    guardrails,
+    capstone,
 )
+
+# ── Startup / shutdown ───────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Initialise tracing and index resources/ into the local vector store if it is empty."""
+    try:
+        from rag.observability.otel import init_tracing
+        init_tracing()
+    except Exception:
+        logger.exception("Tracing initialisation failed (continuing without OpenTelemetry)")
+    try:
+        from rag.ingestion.indexer import bootstrap_if_empty
+        bootstrap_if_empty()
+    except Exception:
+        logger.exception("Bootstrap indexing could not start")
+    yield
+
 
 # ── Build FastAPI app ────────────────────────────────────────
 
 app = FastAPI(
+    lifespan=lifespan,
     title="Insurance Policy & Claims RAG Platform",
     description=(
         "Production-Style RAG Application covering Weeks 1–11:\n\n"
-        "- **Retrieval & RAG**: Hybrid search (BM25 + Pinecone via RRF), Cross-Encoder reranking, MMR, Scope Guard, Query Rewriting\n"
+        "- **Retrieval & RAG**: Hybrid search (BM25 + ChromaDB via RRF), Cross-Encoder reranking, MMR, Scope Guard, Query Rewriting\n"
         "- **Agent Loops**: ReAct Agent with 4 budgets vs Fixed Workflow\n"
         "- **MCP Protocol**: JSON-RPC 2.0 dynamic tool discovery & server orchestration\n"
         "- **Multi-Agent Squad**: Manager + Policy Specialist + Payout Specialist A2A protocol\n"
-        "- **Observability & QA**: Granular OpenTelemetry spans, support triage drill, semantic caching, failure-to-test loop"
+        "- **Observability & QA**: OpenTelemetry spans per request step, support triage drill, semantic caching, failure-to-test loop"
     ),
     version="2.0.0",
     docs_url="/api/docs",
@@ -62,22 +82,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Static files & Templates (Legacy SPA preserved) ─────────
-_WEB_DIR = Path(__file__).resolve().parents[1] / "web"
-_STATIC_DIR = _WEB_DIR / "static"
-_TEMPLATES_DIR = _WEB_DIR / "templates"
-
-if _STATIC_DIR.is_dir():
-    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
-
-if _TEMPLATES_DIR.is_dir():
-    templates = Jinja2Templates(directory=_TEMPLATES_DIR)
-
-    @app.get("/legacy-web", include_in_schema=False)
-    async def serve_legacy_ui(request: Request):
-        return templates.TemplateResponse(request, "index.html")
-
-
 # ── Register API routers ─────────────────────────────────────
 app.include_router(ask.router,           prefix="/api",              tags=["Search & Q&A"])
 app.include_router(documents.router,     prefix="/api/documents",    tags=["Documents"])
@@ -88,6 +92,9 @@ app.include_router(mcp.router,           prefix="/api/mcp",          tags=["MCP 
 app.include_router(multi_agent.router,   prefix="/api/multi-agent",  tags=["Multi-Agent Squad"])
 app.include_router(observability.router, prefix="/api/observability",tags=["Observability & Caching"])
 app.include_router(system.router,        prefix="/api/system",       tags=["System"])
+app.include_router(foundations.router,   prefix="/api/foundations",  tags=["Foundations Lab (Week 1)"])
+app.include_router(guardrails.router,    prefix="/api/guardrails",   tags=["Guardrails & Structured Output (Weeks 2, 8)"])
+app.include_router(capstone.router,      prefix="/api/capstone",     tags=["Capstone (Week 12)"])
 
 
 # ── Root & Health check ──────────────────────────────────────

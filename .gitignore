@@ -37,3 +37,12 @@ Thumbs.db
 # Local backup directories
 _backup/
 *_backup/
+
+# Generated local stores & exports (rebuilt automatically)
+data/vectorstore/
+traces/otel_spans.jsonl
+traces/otel_spans.jsonl.1
+
+# Keep archived files that would otherwise match the ignore patterns above
+!legacy/build_artifacts/rag_week_3.egg-info/
+!legacy/week07/*.log

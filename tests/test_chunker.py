@@ -1,4 +1,4 @@
-from rag.core.ingest.chunker import chunk_pages
+from rag.ingestion.chunker import chunk_pages
 
 
 def test_chunk_pages_applies_overlap():

@@ -1,0 +1,23 @@
+# Two named themes keep Streamlit's built-in System / Light / Dark switcher (menu, top right).
+# A single [theme] block would pin one theme and hide the switcher, so do not add one.
+# "System" follows the operating system; the user's choice is remembered in the browser.
+
+[theme.light]
+primaryColor = "#1f6feb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f4f6fa"
+textColor = "#1b2430"
+font = "sans serif"
+
+[theme.dark]
+primaryColor = "#1f6feb"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#1a1f2b"
+textColor = "#e6e9ef"
+font = "sans serif"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false

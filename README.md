@@ -1,149 +1,87 @@
-# 🛡️ Enterprise Insurance Policy & Claims RAG Platform
+# Insurance Policy & Claims RAG Platform
 
-Production-style refactored Retrieval-Augmented Generation (RAG) platform covering Weeks 1 through 11 curriculum, featuring hybrid retrieval, cross-encoder reranking, ReAct agent loops with budget governance, MCP (Model Context Protocol) tool integration, Multi-Agent Squads (A2A protocol), and span-level OpenTelemetry observability.
+Upload insurance policy PDFs, ask questions and get cited answers, triage claims with agents, and evaluate, trace and inspect everything from one UI. It brings the Week 1-12 curriculum together as a single application with open-source tooling throughout: ChromaDB, OpenTelemetry, Tesseract, sentence-transformers, BM25 and Ollama. No account or API key is needed.
 
----
+## Documentation
 
-## 🏗️ System Architecture
-
-```
-                          ┌───────────────────────────┐
-                          │   Streamlit Frontend UI   │
-                          │   (http://localhost:8501) │
-                          └─────────────┬─────────────┘
-                                        │ HTTP calls only (ui/api_client.py)
-                                        ▼
-                          ┌───────────────────────────┐
-                          │    FastAPI HTTP Backend   │
-                          │   (http://localhost:8000) │
-                          └─────────────┬─────────────┘
-                                        │
-      ┌──────────────────┬──────────────┼──────────────┬──────────────────┐
-      ▼                  ▼              ▼              ▼                  ▼
-┌───────────┐      ┌───────────┐  ┌───────────┐  ┌───────────┐      ┌───────────┐
-│ Documents │      │  Search   │  │   Agent   │  │    MCP    │      │Observabil.│
-│ & Ingest  │      │   & Q&A   │  │  Triage   │  │ Ecosystem │      │  & Spans  │
-└─────┬─────┘      └─────┬─────┘  └─────┬─────┘  └─────┬─────┘      └─────┬─────┘
-      │                  │              │              │                  │
-      ▼                  ▼              ▼              ▼                  ▼
- [pypdf / OCR]    [BM25 + Pinecone] [4 Budgets]  [JSON-RPC 2.0]      [Span Tracing]
- [Chunking]       [Cross-Encoder]   [Laps Loop]  [Claims/Policy Srv] [Support Drill]
- [Embedder]       [MMR Diversity]   [Trajectory] [Tool Discovery]    [Semantic Cache]
-```
-
-### Key Architectural Standards
-1. **Strict Layer Separation**: The UI (`ui/`) never imports backend internals. All interactions occur over the HTTP API client (`ui/api_client.py`).
-2. **One-Command Launcher**: `python run.py` automatically validates ports, environment settings, boots FastAPI, waits for `/health`, launches Streamlit, and provides clean process tree shutdown on Ctrl+C.
-3. **Budget Governance**: ReAct Agent enforces 4 strict budgets in code (max iterations, max tokens, max dollar cost, wall-clock timeout).
-4. **Zero-Code MCP Discovery**: New MCP servers are plugged in via configuration only (`data/mcp_config.json`); zero lines of agent code change.
-5. **Decoupled A2A Protocol**: Multi-agent claims squad communicates over structured `A2AMessage` envelopes with complete audit trails.
-
----
-
-## ⚡ Quick Start
-
-### 1. Prerequisites
-- Python 3.10+ (Windows PowerShell)
-- Optional: [Ollama](https://ollama.ai) with `llama3.2` model (`ollama run llama3.2`) for local generation & query rewriting
-- Optional: Pinecone Vector Database API Key for vector queries
-
-### 2. Environment Setup
-```powershell
-# In your virtual environment:
-python run.py --setup
-```
-This automatically verifies and installs all required dependencies from `requirements.txt`.
-
-Ensure your `.env` contains your settings:
-```ini
-PINECONE_API_KEY=your_key_here
-PINECONE_INDEX_NAME=rag-week-3-py
-OLLAMA_MODEL=llama3.2
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
-RAG_DOCUMENT=InsurancePolicy.pdf
-BACKEND_PORT=8000
-FRONTEND_PORT=8501
-```
-
-### 3. Start the Full Stack (One Command)
-```powershell
-python run.py
-```
-This command:
-1. Validates the environment and `.env`
-2. Checks that ports 8000 and 8501 are free (or assigns fallbacks)
-3. Boots FastAPI with Uvicorn
-4. Waits for `http://localhost:8000/health` to confirm healthy status
-5. Boots Streamlit on `http://localhost:8501`
-6. Opens the UI in your default browser
-7. Pipes colored logs to the terminal and records them in `logs/backend.log` and `logs/frontend.log`
-8. Shuts down cleanly on `Ctrl+C` (no orphaned Windows processes)
-
----
-
-## 🧭 Comprehensive UI Guide
-
-The unified Streamlit frontend exposes every capability from Weeks 1 through 11 across 8 dedicated pages:
-
-| Page | Capability & Operations |
+| Read this | For |
 |---|---|
-| **Home (`app.py`)** | Subsystem health indicator, live KPI metrics cards, quick-navigation cards |
-| **1. Documents** | List indexed policy PDFs, view page count & size, upload new PDFs with background indexing, delete documents & vectors, reindex all, and inspect chunk boundaries |
-| **2. Search & Q&A** | Natural language queries with quick suggested questions, retrieval mode switch (`semantic`, `hybrid`, `reranked`), similarity threshold & top-k sliders, query rewriter toggle, confidence badges, citations, and context inspection |
-| **3. Agent Triage** | Claim triage with dynamic ReAct loop enforcing 4 budgets, fixed workflow comparison, budget termination stress tests, trajectory evaluation, and 10-claim race benchmark |
-| **4. MCP Ecosystem** | Connected JSON-RPC 2.0 MCP servers, dynamically discovered tools, interactive tool execution, end-to-end claim triage, and live configuration swapping |
-| **5. Multi-Agent Squad** | Inspect Agent Cards (Manager, Policy Specialist, Payout Specialist), run A2A squad triage, inspect message envelopes and full markdown hand-off transcripts, and race Single Agent vs Squad |
-| **6. Evaluation & QA** | Retrieval quality improvement proof (Baseline vs Hybrid Hit Rate@3 & MRR), failure separation diagnosis with human reviewer overrides, deterministic regex assertions tester, and calibrated LLM Judge V1 vs V2 |
-| **7. Observability** | OpenTelemetry span-level production traces, step latency & costing breakdown, deterministic trace replay, support triage drill locating planted failure, and semantic cache cost reduction benchmark (≥35%) |
-| **8. System & Logs** | Component connection health (FastAPI, Ollama, Pinecone), environment configuration with secrets masked (`****`), vector index specifications, and live application logs |
+| [docs/setup.md](docs/setup.md) | install, configure, run, test, troubleshoot |
+| [docs/architecture.md](docs/architecture.md) | design, diagrams, data flow, tool choices and the open-source swaps |
+| [docs/features.md](docs/features.md) | every capability by week: what it does, where to use it, endpoints, how real it is |
+| [docs/legacy.md](docs/legacy.md) | everything archived in `legacy/`: old path, replacement, reason |
+| [docs/weekly/](docs/weekly/README.md) | historical weekly notes |
+| *Documentation* page in the UI | end-user guide with diagrams and step-by-step walkthroughs |
 
----
+## Quick start
 
-## 📁 Repository Structure
+On a fresh machine you need only Python 3.10+:
+
+1. Install Python from <https://www.python.org/downloads/>.
+2. Clone or unzip this repository and open a terminal in its folder.
+3. Run `python run.py`.
+4. If it stops and lists keys to fill in, edit `.env` and run `python run.py` again (this project currently needs none).
+
+The first run creates `.venv`, installs the dependencies, creates `.env`, downloads the models, checks for optional services, then starts everything. Later runs do a fast check and start straight away. No activation, `pip install` or file copying by hand. `python run.py --setup` prepares the machine without starting the servers. Details: [docs/setup.md](docs/setup.md).
+
+`python run.py` starts the API and the UI together, waits until the API answers `/health`, opens the browser, and shuts everything down cleanly on `Ctrl+C`.
+
+- UI: http://localhost:8501
+- API docs: http://localhost:8000/api/docs
+- Optional: [Ollama](https://ollama.com) with `llama3.2` for written answers, query rewriting and the LLM judge, and Tesseract for OCR. The launcher tells you if either is missing and how to add it. Everything else works without them.
+
+## What is in the UI
+
+Pages are grouped in the sidebar by what you are trying to do:
+
+| Group | Pages |
+|---|---|
+| Start | Home, Documentation |
+| Learn & Guardrails | Foundations Lab (Week 1), Guardrails & Security (Weeks 2, 8) |
+| Documents & Answers | Documents (Week 3), Search & Q&A (Weeks 3-4) |
+| Evaluate | Evaluation (Weeks 4, 6, 11), Error Analysis (Week 5) |
+| Agents | Agent Triage (Weeks 7-8), MCP Ecosystem (Week 9), Multi-Agent Squad (Week 10) |
+| Production | Observability (Weeks 5, 11) |
+| Capstone | Capstone (Week 12) |
+| System | System & Health |
+
+The System page shows which tools are actually running and can run a real self-test of each.
+
+The menu in the top-right corner has a **System / Light / Dark** theme switcher; the choice is remembered across pages and refreshes.
+
+## Repository layout
 
 ```
 Rag_Week_3/
-├── pyproject.toml              # Build & package configuration
-├── requirements.txt            # Dependency specification
-├── README.md                   # System documentation & UI guide
-├── .env.example                # Safe environment template (no real keys)
-├── .gitignore                  # Git ignore rules
-├── run.py                      # The unified one-command launcher
-├── src/
-│   └── rag/
-│       ├── config.py           # Central application configuration
-│       ├── core/               # Scope guard, query rewriter, document IDs, providers
-│       ├── ingestion/          # PDF reader (OCR), chunking strategies, indexing
-│       ├── retrieval/          # BM25, hybrid retriever (RRF), cross-encoder, MMR
-│       ├── storage/            # Pinecone vector store operations
-│       ├── generation/         # Ollama LLM provider & grounded prompts
-│       ├── services/           # Pipeline, agent, MCP, multi-agent, cache, observability
-│       ├── api/                # FastAPI factory, schemas, and 8 routers
-│       └── web/                # Legacy HTML/CSS/JS interface
-├── ui/
-│   ├── app.py                  # Streamlit entrance & landing dashboard
-│   ├── api_client.py           # Clean HTTP API client (no backend imports)
-│   └── pages/                  # 8 modular capability pages
-├── tests/                      # Unit tests & full health smoke test
-├── data/                       # Datasets, prompts, MCP configs, benchmarks
-├── resources/                  # Policy documents (PDFs)
-├── traces/                     # Production traces (JSONL)
-├── logs/                       # Backend and frontend log files
-└── legacy/                     # Preserved historical week-by-week scripts
+├── run.py                  one-command launcher (API + UI)
+├── requirements.txt, pyproject.toml, .env.example, .streamlit/
+├── src/rag/
+│   ├── api/                FastAPI app and routers
+│   ├── services/           orchestration called by the API
+│   ├── ingestion/          PDF reading + OCR, chunking, indexing
+│   ├── retrieval/          BM25, hybrid RRF, reranker, MMR
+│   ├── generation/         LLM answer, structured output
+│   ├── storage/            embedder, ChromaDB vector store
+│   ├── evaluation/         retrieval eval, trajectory, failure labels, regression cases
+│   ├── core/               scope guard, injection guard, query rewriter, providers
+│   ├── agent/ agents/ mcp/ single agent, A2A squad, JSON-RPC MCP
+│   ├── observability/      spans, OpenTelemetry bridge, support drill
+│   ├── cache/ models/ scripts/ config.py
+├── ui/                     Streamlit UI (app.py router, components.py, api_client.py, views/)
+├── tests/                  pytest suite
+├── data/                   datasets, prompts, MCP configs, saved results
+├── resources/              policy PDFs
+├── traces/                 request traces (JSONL)
+├── docs/                   architecture, setup, features, legacy index, weekly notes
+└── legacy/                 archived scripts and files, grouped by week
 ```
 
----
+## Tests
 
-## 🧪 Running Tests
-
-To run the complete test suite (18 tests verifying chunking, hybrid retrieval, MMR, scope guard, failure regression loop, and full API endpoint smoke tests):
 ```powershell
-python -m pytest tests/ -v
+python -m pytest tests -q
 ```
 
----
+## Honest limits
 
-## 📜 Legacy Scripts
-
-All historical standalone runner scripts are preserved under `legacy/` with an explanatory `legacy/README.md` documenting their original context and their corresponding production module in the new architecture.
+Some parts are scripted or simulated, and the UI labels them: the agent loop follows a fixed plan, MCP servers are called in-process, the support drill runs on generated traces with one planted failure, and the cache benchmark simulates latency and cost. Details are in [docs/features.md](docs/features.md) and the Capstone page's *Known weak spots*.

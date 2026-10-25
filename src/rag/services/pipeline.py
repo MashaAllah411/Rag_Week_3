@@ -8,7 +8,7 @@
 #
 # EXISTING MODULES USED (ALL UNCHANGED):
 #   embedder.py        → embed_user_query
-#   vectorstore.py     → search_in_pinecone
+#   vectorstore.py     → search_chunks
 #   bm25.py            → search_bm25
 #   hybrid_retriever.py→ hybrid_search
 #   reranker.py        → rerank_chunks
@@ -19,6 +19,9 @@
 
 import logging
 from typing import List, Dict, Optional
+
+from rag.observability.tracer import (
+    DEFAULT_PROD_TRACES_PATH, ProductionTracer, RequestTrace, redact_pii)
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +43,7 @@ def _get_embedder():
     return get_embedding_provider().embed_user_query
 
 
-def _get_pinecone_search():
+def _get_vector_search():
     from rag.core.providers import get_vectorstore_provider
     return get_vectorstore_provider().search
 
@@ -70,6 +73,23 @@ def _get_llm():
     return get_llm_provider().query_with_context
 
 
+# ── Per-request tracing (Week 11: one span per step, with time/tokens/cost) ──
+
+def _approx_tokens(text: str) -> int:
+    """Rough token estimate (~4 chars/token); the local model does not report usage here."""
+    return max(1, len(text or "") // 4)
+
+
+def _finish_trace(rt: RequestTrace, answer: str, confidence: str, status: str = "COMPLETED") -> None:
+    """Complete the request trace and append it to traces/production_traces.jsonl."""
+    try:
+        rt.complete(final_output={"answer": redact_pii(answer)[:500], "confidence": confidence}, status=status)
+        ProductionTracer(DEFAULT_PROD_TRACES_PATH).log_trace(rt)
+        logger.info("[PIPELINE] Request trace %s logged (%d spans)", rt.trace_id, len(rt.spans))
+    except Exception as e:
+        logger.warning(f"[PIPELINE] Request trace logging failed: {e}")
+
+
 # ── Confidence gate ──────────────────────────────────────────
 
 def _assess_confidence(chunks: List[Dict], threshold: float) -> str:
@@ -96,6 +116,7 @@ def run_pipeline(
     similarity_threshold: float = 0.0,
     use_query_rewriter: bool = True,
     document_name: Optional[str] = None,
+    scan_injection: bool = False,
 ) -> Dict:
     """
     Full RAG pipeline:
@@ -108,12 +129,19 @@ def run_pipeline(
       7. Return structured result dict
     """
     pipeline_steps = []
+    rt = RequestTrace(query=redact_pii(question), request_id="ask",
+                      metadata={"mode": mode, "top_k": top_k, "document": document_name or "all"})
 
     # Reject invalid/unrelated requests before query rewriting and retrieval.
     from rag.core.scope_guard import check_question_scope
+    s_scope = rt.start_span("scope_guard", attributes={"document": document_name or "all"})
     scope = check_question_scope(question, document_name=document_name)
+    s_scope.tokens_in = _approx_tokens(question)
+    s_scope.attributes.update(allowed=scope.allowed, reason=scope.reason)
+    s_scope.end(status="OK")
     if not scope.allowed:
         pipeline_steps.append(f"Scope guard rejected request: {scope.reason}")
+        _finish_trace(rt, _OUT_OF_SCOPE_RESPONSE, "unknown")
         return {
             "question": question,
             "rewritten_query": None,
@@ -129,6 +157,7 @@ def run_pipeline(
 
     # ── Step 1: Query Rewriting ──────────────────────────────
     rewritten_query = question
+    s_rewrite = rt.start_span("query_rewrite", attributes={"enabled": use_query_rewriter})
     if use_query_rewriter:
         try:
             logger.info(f"[PIPELINE] Rewriting query: '{question}'")
@@ -142,16 +171,20 @@ def run_pipeline(
             pipeline_steps.append(f"Query rewriter failed (using original): {e}")
     else:
         pipeline_steps.append("Query rewriting skipped (disabled by user)")
+    s_rewrite.tokens_in = _approx_tokens(question) if use_query_rewriter else 0
+    s_rewrite.tokens_out = _approx_tokens(rewritten_query) if use_query_rewriter else 0
+    s_rewrite.end(status="OK")
 
     search_query = rewritten_query
 
     # ── Step 2: Retrieval ────────────────────────────────────
     raw_chunks: List[Dict] = []
+    s_retrieve = rt.start_span(f"retrieval:{mode}", attributes={"top_k": top_k})
 
     if mode == "semantic":
         logger.info("[PIPELINE] Mode: Semantic Search")
         embed_fn = _get_embedder()
-        search_fn = _get_pinecone_search()
+        search_fn = _get_vector_search()
         query_vec = embed_fn(search_query)
         metadata_filter = {"document_name": {"$eq": document_name}} if document_name else None
         raw_results = search_fn(query_vec, top_k=top_k, filter=metadata_filter)
@@ -164,7 +197,7 @@ def run_pipeline(
         pipeline_steps.append(f"Semantic search → {len(raw_chunks)} chunks retrieved")
 
     elif mode == "hybrid":
-        logger.info("[PIPELINE] Mode: Hybrid Search (BM25 + Pinecone + RRF)")
+        logger.info("[PIPELINE] Mode: Hybrid Search (BM25 + ChromaDB + RRF)")
         hybrid_fn = _get_hybrid_search()
         raw_results = hybrid_fn(search_query, top_k=top_k, candidate_k=10, document_name=document_name)
         for r in raw_results:
@@ -203,12 +236,28 @@ def run_pipeline(
     else:
         raise ValueError(f"Unknown mode: '{mode}'. Use 'semantic', 'hybrid', or 'reranked'.")
 
+    s_retrieve.tokens_in = _approx_tokens(search_query)
+    s_retrieve.attributes.update(chunks=len(raw_chunks), chunk_ids=",".join(c["id"] for c in raw_chunks))
+    s_retrieve.end(status="OK")
+
+    # ── Optional: quarantine chunks that carry prompt-injection (Week 8; off by default) ──
+    if scan_injection and raw_chunks:
+        from rag.core.injection_guard import filter_chunks
+        raw_chunks, quarantined = filter_chunks(raw_chunks)
+        if quarantined:
+            ids = ", ".join(c["id"] for c in quarantined)
+            pipeline_steps.append(f"Injection scan quarantined {len(quarantined)} chunk(s): {ids}")
+            logger.warning("[PIPELINE] Injection scan quarantined chunks: %s", ids)
+        else:
+            pipeline_steps.append("Injection scan: no suspicious chunks")
+
     # ── Step 3: Confidence Check ─────────────────────────────
     confidence = _assess_confidence(raw_chunks, similarity_threshold)
     pipeline_steps.append(f"Confidence assessment: {confidence.upper()}")
     logger.info(f"[PIPELINE] Confidence: {confidence}")
 
     # ── Step 4: LLM Grounded Answer ──────────────────────────
+    s_llm = rt.start_span("generation:llm", attributes={"model": "llama3.2"})
     if not raw_chunks or confidence == "unknown":
         answer = _IDK_RESPONSE
         pipeline_steps.append("No chunks retrieved → returning I-don't-know response")
@@ -226,6 +275,12 @@ def run_pipeline(
                 f"Error: {e}"
             )
             pipeline_steps.append(f"LLM call failed: {e}")
+
+    llm_failed = answer.startswith("LLM unavailable")
+    s_llm.tokens_in = _approx_tokens(" ".join(c["text"] for c in raw_chunks) + question)
+    s_llm.tokens_out = _approx_tokens(answer)
+    s_llm.end(status="ERROR" if llm_failed else "OK", error=answer[:200] if llm_failed else None)
+    _finish_trace(rt, answer, confidence, status="FAILED" if llm_failed else "COMPLETED")
 
     # ── Step 5: Log PII-Redacted Trace (Week 5 Requirement) ──
     try:

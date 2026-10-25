@@ -20,7 +20,7 @@ async def ask(request: AskRequest):
     Runs the RAG pipeline for the given question.
 
     **Modes:**
-    - `semantic` — Pinecone vector search only (baseline)
+    - `semantic` — ChromaDB vector search only (baseline)
     - `hybrid` — Semantic + BM25 keyword search fused via RRF
     - `reranked` — Hybrid + Cross-Encoder reranking + MMR diversity
 
@@ -36,6 +36,7 @@ async def ask(request: AskRequest):
             similarity_threshold=request.similarity_threshold,
             use_query_rewriter=request.use_query_rewriter,
             document_name=request.document_name,
+            scan_injection=request.scan_injection,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

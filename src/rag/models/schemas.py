@@ -14,12 +14,13 @@ class AskRequest(BaseModel):
     question: str = Field(..., min_length=3, description="The question to ask against the policy")
     mode: Literal["semantic", "hybrid", "reranked"] = Field(
         default="hybrid",
-        description="Retrieval mode: semantic (Pinecone only), hybrid (BM25+RRF), reranked (hybrid + cross-encoder + MMR)"
+        description="Retrieval mode: semantic (ChromaDB only), hybrid (BM25+RRF), reranked (hybrid + cross-encoder + MMR)"
     )
     top_k: int = Field(default=3, ge=1, le=10, description="Number of chunks to retrieve")
     similarity_threshold: float = Field(default=0.0, ge=0.0, le=1.0, description="Minimum similarity score")
     use_query_rewriter: bool = Field(default=True, description="Whether to rewrite the query with local LLM before search")
     document_name: Optional[str] = Field(default=None, description="Optional document filename filter")
+    scan_injection: bool = Field(default=False, description="Scan retrieved chunks for prompt-injection and quarantine flagged ones before generation (Week 8)")
 
 
 class ChunkResult(BaseModel):

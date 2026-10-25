@@ -3,7 +3,7 @@
 #
 # PURPOSE:
 #   Implements production-grade observability and tracing:
-#     1. Granular Span-level timing & token/dollar costing (OpenTelemetry compatible)
+#     1. Granular Span-level timing & token/dollar costing (exported via the OpenTelemetry SDK)
 #     2. PII Redaction (names, IDs, emails, phone numbers) before logging
 #     3. RequestTrace for complete end-to-end request tracking
 #     4. Trace replay capability to re-run queries purely from logged context
@@ -23,6 +23,9 @@ from dataclasses import dataclass, field, asdict
 # Token pricing defaults (e.g. GPT-4o-mini / Claude 3.5 Haiku class: $0.15/1M input, $0.60/1M output)
 DEFAULT_INPUT_COST_PER_1K = 0.00015
 DEFAULT_OUTPUT_COST_PER_1K = 0.00060
+
+# app span_id -> owning request trace_id, so Span.end() can export under the right OTel root
+_SPAN_OWNER: Dict[str, str] = {}
 
 DEFAULT_PROD_TRACES_PATH = os.path.join("traces", "production_traces.jsonl")
 DEFAULT_TRACES_PATH = os.path.join("traces", "traces.jsonl")
@@ -114,6 +117,17 @@ class Span:
             (self.tokens_out / 1000.0) * DEFAULT_OUTPUT_COST_PER_1K,
             6
         )
+        # Mirror to the real OpenTelemetry SDK (never allowed to break a request).
+        try:
+            from rag.observability import otel
+            owner = _SPAN_OWNER.pop(self.span_id, "")
+            attrs = dict(self.attributes)
+            attrs.update(tokens_in=self.tokens_in, tokens_out=self.tokens_out,
+                         cost_usd=self.cost_usd, duration_ms=self.duration_ms)
+            otel.emit_span(owner, self.span_id, self.name, self.start_time, self.end_time,
+                           attrs, status, error, self.parent_span_id)
+        except Exception:
+            pass
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -143,6 +157,15 @@ class RequestTrace:
             attributes=attributes or {}
         )
         self.spans.append(span)
+        try:
+            from rag.observability import otel
+            if len(self.spans) == 1:
+                otel.begin_request(self.trace_id, self.query, self.timestamp)
+            _SPAN_OWNER[span.span_id] = self.trace_id
+            if len(_SPAN_OWNER) > 5000:
+                _SPAN_OWNER.clear()
+        except Exception:
+            pass
         return span
 
     def complete(self, final_output: Optional[Dict[str, Any]] = None, status: str = "COMPLETED"):
@@ -152,6 +175,13 @@ class RequestTrace:
         self.total_duration_ms = round(sum(s.duration_ms for s in self.spans), 2)
         self.total_tokens = sum(s.tokens_in + s.tokens_out for s in self.spans)
         self.total_cost_usd = round(sum(s.cost_usd for s in self.spans), 6)
+        try:
+            from rag.observability import otel
+            otel.end_request(self.trace_id, time.time(), status, {
+                "span_count": len(self.spans), "total_tokens": self.total_tokens,
+                "total_cost_usd": self.total_cost_usd})
+        except Exception:
+            pass
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
@@ -211,7 +241,7 @@ def log_trace(
     retrieved_chunks: List[Dict[str, Any]],
     raw_llm_output: str,
     prompt_version: str = "v1.0",
-    retriever_type: str = "Hybrid (Pinecone + BM25 + RRF + CrossEncoder + MMR)",
+    retriever_type: str = "Hybrid (ChromaDB + BM25 + RRF + CrossEncoder + MMR)",
     model_name: str = "llama3.2",
     model_parameters: Optional[Dict[str, Any]] = None,
     traces_file: str = DEFAULT_TRACES_PATH
@@ -287,7 +317,7 @@ def replay_trace(trace_id: str, traces_file: str = DEFAULT_TRACES_PATH) -> Dict[
     retrieved_chunk_ids = [c["chunk_id"] for c in record.get("retrieved_chunks", [])]
 
     # Reconstruct context
-    from rag.core.retrieval.bm25 import _ensure_index, _chunk_ids, _chunk_texts
+    from rag.retrieval.bm25 import _ensure_index, _chunk_ids, _chunk_texts
     chunk_map = {}
     try:
         _ensure_index()
@@ -299,7 +329,7 @@ def replay_trace(trace_id: str, traces_file: str = DEFAULT_TRACES_PATH) -> Dict[
     context_chunks = [chunk_map.get(cid, f"[Content for chunk {cid}]") for cid in retrieved_chunk_ids]
     context_str = "\n\n---\n\n".join(context_chunks)
 
-    from rag.infra.llm import query_llm_with_context
+    from rag.generation.llm import query_llm_with_context
     replayed_output = query_llm_with_context(query, context_str)
 
     return {

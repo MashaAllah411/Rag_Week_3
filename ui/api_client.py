@@ -57,7 +57,7 @@ class ApiClient:
         return resp.json()
 
     def delete_document(self, filename: str) -> Dict[str, Any]:
-        """Delete a document and its Pinecone vectors."""
+        """Delete a document and its ChromaDB vectors."""
         resp = requests.delete(f"{self.base_url}/api/documents/{filename}", timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
@@ -68,9 +68,11 @@ class ApiClient:
         resp.raise_for_status()
         return resp.json()
 
-    def inspect_document_chunks(self, filename: str) -> Dict[str, Any]:
-        """Inspect chunk previews for a document."""
-        resp = requests.get(f"{self.base_url}/api/documents/{filename}/chunks", timeout=TIMEOUT)
+    def inspect_document_chunks(self, filename: str, strategy: str = "fixed",
+                                chunk_size: int = 900, chunk_overlap: int = 150) -> Dict[str, Any]:
+        """Inspect chunk previews for a document under a chunking strategy (fixed | keyword | semantic)."""
+        params = {"strategy": strategy, "chunk_size": chunk_size, "chunk_overlap": chunk_overlap}
+        resp = requests.get(f"{self.base_url}/api/documents/{filename}/chunks", params=params, timeout=120.0)
         resp.raise_for_status()
         return resp.json()
 
@@ -83,7 +85,8 @@ class ApiClient:
         top_k: int = 3,
         similarity_threshold: float = 0.0,
         use_query_rewriter: bool = True,
-        document_name: Optional[str] = None
+        document_name: Optional[str] = None,
+        scan_injection: bool = False
     ) -> Dict[str, Any]:
         """Run the full RAG pipeline."""
         payload = {
@@ -92,9 +95,10 @@ class ApiClient:
             "top_k": top_k,
             "similarity_threshold": similarity_threshold,
             "use_query_rewriter": use_query_rewriter,
-            "document_name": document_name
+            "document_name": document_name,
+            "scan_injection": scan_injection
         }
-        resp = requests.post(f"{self.base_url}/api/ask", json=payload, timeout=TIMEOUT)
+        resp = requests.post(f"{self.base_url}/api/ask", json=payload, timeout=120.0)
         resp.raise_for_status()
         return resp.json()
 
@@ -263,6 +267,126 @@ class ApiClient:
         resp = requests.post(f"{self.base_url}/api/observability/cache-benchmark", json=payload, timeout=TIMEOUT)
         resp.raise_for_status()
         return resp.json()
+
+    # ── Generic helpers for the endpoints added in the consolidation pass ──
+
+    def _get(self, path: str, params: Optional[Dict[str, Any]] = None, timeout: float = TIMEOUT) -> Dict[str, Any]:
+        resp = requests.get(f"{self.base_url}{path}", params=params, timeout=timeout)
+        resp.raise_for_status()
+        return resp.json()
+
+    def _post(self, path: str, payload: Optional[Dict[str, Any]] = None, params: Optional[Dict[str, Any]] = None,
+              timeout: float = TIMEOUT) -> Dict[str, Any]:
+        resp = requests.post(f"{self.base_url}{path}", json=payload if payload is not None else {}, params=params, timeout=timeout)
+        resp.raise_for_status()
+        return resp.json()
+
+    # ── Week 1: Foundations Lab ──────────────────────────────
+
+    def tokenize(self, text: str, context_window: int = 4096) -> Dict[str, Any]:
+        return self._post("/api/foundations/tokenize", {"text": text, "context_window": context_window}, timeout=120.0)
+
+    def estimate_cost(self, input_tokens: int, output_tokens: int, requests_count: int = 1,
+                      input_per_m: float = 0.15, output_per_m: float = 0.60) -> Dict[str, Any]:
+        return self._post("/api/foundations/cost", {"input_tokens": input_tokens, "output_tokens": output_tokens,
+                                                    "requests": requests_count, "input_per_m": input_per_m,
+                                                    "output_per_m": output_per_m})
+
+    def sampling_demo(self, tokens: List[str], logits: List[float], temperature: float = 1.0, top_k: int = 0,
+                      top_p: float = 1.0, draws: int = 200, seed: Optional[int] = 42) -> Dict[str, Any]:
+        return self._post("/api/foundations/sampling", {"tokens": tokens, "logits": logits, "temperature": temperature,
+                                                        "top_k": top_k, "top_p": top_p, "draws": draws, "seed": seed})
+
+    def embedding_similarity(self, texts: List[str]) -> Dict[str, Any]:
+        return self._post("/api/foundations/similarity", {"texts": texts}, timeout=120.0)
+
+    # ── Weeks 2 & 8: Guardrails, structured output, prompt injection ──
+
+    def injection_demo(self) -> Dict[str, Any]:
+        return self._get("/api/guardrails/injection/demo")
+
+    def injection_scan(self, text: str) -> Dict[str, Any]:
+        return self._post("/api/guardrails/injection/scan", {"text": text})
+
+    def injection_scan_retrieval(self, question: str, top_k: int = 5, document_name: Optional[str] = None) -> Dict[str, Any]:
+        return self._post("/api/guardrails/injection/scan-retrieval",
+                          {"question": question, "top_k": top_k, "document_name": document_name}, timeout=120.0)
+
+    def guardrail_tools(self) -> Dict[str, Any]:
+        return self._get("/api/guardrails/tools")
+
+    def scope_check(self, question: str, document_name: Optional[str] = None) -> Dict[str, Any]:
+        return self._post("/api/guardrails/scope", {"question": question, "document_name": document_name}, timeout=120.0)
+
+    def structured_schema(self) -> Dict[str, Any]:
+        return self._get("/api/guardrails/structured/schema")
+
+    def structured_validate(self, raw: str) -> Dict[str, Any]:
+        return self._post("/api/guardrails/structured/validate", {"raw": raw})
+
+    def structured_generate(self, question: str, document_name: Optional[str] = None, max_retries: int = 2) -> Dict[str, Any]:
+        return self._post("/api/guardrails/structured/generate",
+                          {"question": question, "document_name": document_name, "max_retries": max_retries}, timeout=180.0)
+
+    # ── Week 3: chunk-size comparison ────────────────────────
+
+    def compare_chunk_sizes(self, filename: str, query: str, expected_text: str, sizes: List[int]) -> Dict[str, Any]:
+        return self._post(f"/api/documents/{filename}/chunk-compare",
+                          {"query": query, "expected_text": expected_text, "sizes": sizes}, timeout=120.0)
+
+    # ── Weeks 4 & 6: current-corpus evaluation, judge validation, regression loop ──
+
+    def eval_datasets(self) -> Dict[str, Any]:
+        return self._get("/api/evaluate/datasets")
+
+    def insurance_eval_results(self) -> Dict[str, Any]:
+        return self._get("/api/evaluate/insurance/results")
+
+    def run_insurance_eval(self, mode: str = "hybrid", top_k: int = 3) -> Dict[str, Any]:
+        return self._post("/api/evaluate/insurance/run", {"mode": mode, "top_k": top_k}, timeout=300.0)
+
+    def judge_validation(self) -> Dict[str, Any]:
+        return self._get("/api/evaluate/judge-validation")
+
+    def regression_cases(self) -> Dict[str, Any]:
+        return self._get("/api/evaluate/regression")
+
+    def run_regression(self) -> Dict[str, Any]:
+        return self._post("/api/evaluate/regression/run")
+
+    # ── Week 5: error analysis ───────────────────────────────
+
+    def error_sample(self, n: int = 20, seed: int = 42) -> Dict[str, Any]:
+        return self._get("/api/observability/error-analysis/sample", {"n": n, "seed": seed})
+
+    def save_error_note(self, trace_id: str, note: str, category: str = "", severity: int = 3) -> Dict[str, Any]:
+        return self._post("/api/observability/error-analysis/notes",
+                          {"trace_id": trace_id, "note": note, "category": category, "severity": severity})
+
+    def error_taxonomy(self) -> Dict[str, Any]:
+        return self._get("/api/observability/error-analysis/taxonomy")
+
+    def save_prediction(self, text: str) -> Dict[str, Any]:
+        return self._post("/api/observability/error-analysis/prediction", {"text": text})
+
+    # ── Week 11: OpenTelemetry export status ─────────────────
+
+    def otel_status(self, limit: int = 30) -> Dict[str, Any]:
+        return self._get("/api/observability/otel", {"limit": limit})
+
+    # ── System self-test and Week 12 capstone ────────────────
+
+    def run_selftest(self, deep: bool = False) -> Dict[str, Any]:
+        return self._post("/api/system/selftest", params={"deep": str(deep).lower()}, timeout=300.0)
+
+    def run_capstone_suite(self) -> Dict[str, Any]:
+        return self._post("/api/capstone/suite", timeout=600.0)
+
+    def capstone_weak_spots(self) -> Dict[str, Any]:
+        return self._get("/api/capstone/weak-spots")
+
+    def capstone_demo(self) -> Dict[str, Any]:
+        return self._get("/api/capstone/demo")
 
 
 api = ApiClient()

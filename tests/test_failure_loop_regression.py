@@ -26,52 +26,7 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("./src"))
 
 from rag.agent.tools import compute_payout, ClaimStatusEnum
-from rag.mcp.policy_server import POLICY_CLAUSES
-
-
-def check_exclusion_guardrail(notes: str, incident_type: str) -> dict:
-    """
-    The regression guardrail protecting against the Support Drill failure.
-    Enforces deterministic check for Section 5.2 flood & rising water perils.
-    """
-    text_lower = f"{notes} {incident_type}".lower()
-
-    # Section 5.2 Trigger Keywords
-    flood_triggers = [
-        "rising lake water",
-        "rising water",
-        "surface runoff",
-        "torrential rainfall runoff",
-        "flood",
-        "inundation",
-        "overflow of inland waters"
-    ]
-
-    is_flood_excluded = any(trig in text_lower for trig in flood_triggers)
-
-    if is_flood_excluded:
-        return {
-            "status": ClaimStatusEnum.DENIED.value,
-            "is_excluded": True,
-            "exclusion_clause": "Section 5.2",
-            "reasoning": "Damage caused by rising surface waters, lake overflow, or runoff is strictly excluded under Section 5.2."
-        }
-
-    # If it's sudden plumbing burst without external rising water
-    if "burst pipe" in text_lower or "pipe burst" in text_lower:
-        return {
-            "status": ClaimStatusEnum.APPROVED.value,
-            "is_excluded": False,
-            "exclusion_clause": None,
-            "reasoning": "Sudden accidental plumbing failure is covered under standard perils."
-        }
-
-    return {
-        "status": ClaimStatusEnum.UNDER_INVESTIGATION.value,
-        "is_excluded": False,
-        "exclusion_clause": None,
-        "reasoning": "Further investigation required."
-    }
+from rag.evaluation.regression import check_exclusion_guardrail, run_all_regression_cases
 
 
 class TestProductionFailureRegressionLoop:
@@ -124,3 +79,9 @@ class TestProductionFailureRegressionLoop:
 
         payout = compute_payout("CLM-NORM-BURST", ClaimStatusEnum.APPROVED, 4000.0, 500.0)
         assert payout["net_payable"] == 3500.0
+
+    def test_regression_runner_reports_all_cases_passing(self):
+        """The shared runner (also used by the UI) agrees with the individual tests."""
+        report = run_all_regression_cases()
+        assert report["total"] >= 3
+        assert report["passed"] == report["total"], report

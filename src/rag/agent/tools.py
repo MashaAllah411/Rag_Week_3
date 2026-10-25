@@ -127,7 +127,7 @@ def search_policy(query: str) -> List[Dict[str, Any]]:
     DO NOT use this tool to fetch claim details or compute payout math.
     """
     try:
-        from rag.core.retrieval.hybrid_retriever import hybrid_search
+        from rag.retrieval.hybrid_retriever import hybrid_search
         results = hybrid_search(query, top_k=3)
         return [{"id": r["id"], "text": r["text"]} for r in results]
     except Exception:

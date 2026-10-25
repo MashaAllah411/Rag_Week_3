@@ -8,7 +8,7 @@
 import logging
 from fastapi import APIRouter
 from rag.models.schemas import LabelRequest
-from rag.services.failure_labeler import get_all_failure_labels, save_human_label
+from rag.evaluation.failure_labeler import get_all_failure_labels, save_human_label
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

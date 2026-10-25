@@ -1,4 +1,4 @@
-from rag.core.retrieval.mmr import cosine_similarity
+from rag.retrieval.mmr import cosine_similarity
 
 
 def test_cosine_similarity_handles_orthogonal_and_zero_vectors():

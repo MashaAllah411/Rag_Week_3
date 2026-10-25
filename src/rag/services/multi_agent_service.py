@@ -34,10 +34,37 @@ def get_agent_cards() -> List[Dict[str, Any]]:
     ]
 
 
+def _normalize_squad_result(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Add the keys the transcript builder, race and UI read, derived from the manager's result.
+
+    ClaimsSquadManager returns final_status / net_payable / a2a_transcripts / total_cost /
+    latency_seconds. This service (and the UI) expect final_decision / hand_offs /
+    total_cost_usd / total_latency_seconds, which the manager never produced, so the
+    transcript was blank and every squad race result scored as failed with zero cost.
+    Original keys are preserved.
+    """
+    result["final_decision"] = {"status": result.get("final_status"), "net_payable": result.get("net_payable", 0.0),
+                                "policy_clause": result.get("policy_clause")}
+    result["total_cost_usd"] = result.get("total_cost", 0.0)
+    result["total_latency_seconds"] = result.get("latency_seconds", 0.0)
+    result["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    hand_offs = []
+    for item in result.get("a2a_transcripts", []):
+        req, resp = item.get("request", {}), item.get("response", {})
+        hand_offs.append({
+            "step": item.get("step"), "sender": req.get("sender"), "recipient": req.get("recipient"),
+            "task_id": resp.get("task_id"), "lifecycle": resp.get("lifecycle"),
+            "tokens_used": resp.get("tokens_used", 0), "latency_seconds": resp.get("latency_seconds", 0.0),
+            "payload": resp.get("payload", {}),
+        })
+    result["hand_offs"] = hand_offs
+    return result
+
+
 def run_squad_triage(claim_id: str) -> Dict[str, Any]:
     """Execute claim triage using the 3-agent squad via A2A protocol."""
     manager = ClaimsSquadManager()
-    result = manager.run_claim_squad(claim_id)
+    result = _normalize_squad_result(manager.run_claim_squad(claim_id))
 
     # Format transcript for display
     transcript_lines = []

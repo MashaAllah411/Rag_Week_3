@@ -1,0 +1,153 @@
+[
+  {
+    "id": "ins_01",
+    "question": "What is the maximum amount the company will bear for protection and removal of a disabled vehicle after one accident?",
+    "expected_text": [
+      "Rs 1500"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_10"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_02",
+    "question": "When is the insured vehicle treated as a constructive total loss?",
+    "expected_text": [
+      "exceeds 75% of the IDV"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_18"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_03",
+    "question": "What is the maximum total compensation under owner-driver personal accident cover in one period of insurance?",
+    "expected_text": [
+      "Rs 15 lakhs"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_14",
+      "insurancepolicy:chunk_15"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_04",
+    "question": "How much notice must the company give to cancel a policy on grounds of established fraud?",
+    "expected_text": [
+      "minimum notice of 7 days"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_24"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_05",
+    "question": "How long does the policy remain valid after the death of the insured?",
+    "expected_text": [
+      "valid for 3 months from date of death"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_25"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_06",
+    "question": "What depreciation applies to rubber, nylon, plastic parts, tyres, tubes, batteries and air bags?",
+    "expected_text": [
+      "batteries and air bags - 50%"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_7"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_07",
+    "question": "What depreciation is applied to fix the IDV of a vehicle that is more than 3 but not more than 4 years old?",
+    "expected_text": [
+      "Exceeding 3 years but not exceeding 4 years: 40%"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_17"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_08",
+    "question": "What percentage of compensation is payable for loss of one limb or sight of one eye under owner-driver personal accident cover?",
+    "expected_text": [
+      "Loss of one limb or sight of one eye: 50%"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_14",
+      "insurancepolicy:chunk_31",
+      "insurancepolicy:chunk_53"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_09",
+    "question": "Is accidental loss covered when the driver is under the influence of intoxicating liquor or drugs?",
+    "expected_text": [
+      "under the influence of intoxicating liquor or drugs"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_9",
+      "insurancepolicy:chunk_10",
+      "insurancepolicy:chunk_15"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_10",
+    "question": "Which countries are included under the extension of geographical area endorsement?",
+    "expected_text": [
+      "Nepal, Sri Lanka, Maldives, Bhutan, Pakistan, Bangladesh"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_25"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "ins_11",
+    "question": "Within how many days of the survey report must a claim rejection be communicated?",
+    "expected_text": [
+      "within 22 days of Survey Report"
+    ],
+    "source_document": "InsurancePolicy.pdf",
+    "chunks_containing_answer": [
+      "insurancepolicy:chunk_37",
+      "insurancepolicy:chunk_38"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  },
+  {
+    "id": "cv_01",
+    "question": "For painting charges, what share is treated as the material component when applying depreciation?",
+    "expected_text": [
+      "25% of total painting charges"
+    ],
+    "source_document": "Commercial_Vehicles_Package_Policy_93ee460add.pdf",
+    "chunks_containing_answer": [
+      "commercial-vehicles-package-policy-93ee460add:chunk_3",
+      "commercial-vehicles-package-policy-93ee460add:chunk_4"
+    ],
+    "notes": "Ground truth authored from the indexed PDF text; matched case/whitespace-insensitively."
+  }
+]

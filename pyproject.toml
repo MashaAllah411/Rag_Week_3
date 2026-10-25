@@ -5,25 +5,28 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rag-week-3"
 version = "2.0.0"
-description = "Production-style Insurance Policy & Claims RAG application with hybrid retrieval, reranking, agent triage, MCP, and multi-agent protocol."
+description = "Production-style Insurance Policy & Claims RAG application with hybrid retrieval, reranking, agent triage, MCP, multi-agent (A2A) and OpenTelemetry observability - open-source tooling throughout."
 requires-python = ">=3.10"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "python-multipart",
+    "pydantic",
     "pypdf",
     "sentence-transformers",
-    "pinecone",
-    "python-dotenv",
-    "ollama",
+    "chromadb",
     "rank-bm25",
+    "ollama",
+    "python-dotenv",
     "numpy",
     "pytesseract",
     "Pillow",
-    "jinja2",
     "streamlit",
     "requests",
-    "httpx"
+    "httpx",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
 ]
 
 [project.optional-dependencies]

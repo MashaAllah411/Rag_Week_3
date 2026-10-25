@@ -16,7 +16,7 @@ from rag.models.schemas import (
     JudgeEvalRequest,
     AssertionCheckRequest
 )
-from rag.services.failure_labeler import get_aggregate_metrics, get_all_failure_labels
+from rag.evaluation.failure_labeler import get_aggregate_metrics, get_all_failure_labels
 from rag.config import BASELINE_RESULTS_PATH, HYBRID_RESULTS_PATH
 from rag.services.evaluation_service import run_deterministic_assertions, run_judge_evaluation
 
@@ -92,7 +92,7 @@ async def get_metrics():
 
 @router.post(
     "/run",
-    summary="Run a fresh evaluation (requires Pinecone + Ollama)"
+    summary="Run a fresh evaluation (requires ChromaDB + Ollama)"
 )
 async def run_evaluation(request: EvaluateRequest, background_tasks: BackgroundTasks):
     """
@@ -100,7 +100,7 @@ async def run_evaluation(request: EvaluateRequest, background_tasks: BackgroundT
     """
     def _run(mode: str, top_k: int):
         try:
-            from rag.scripts.evaluator import run_evaluation as _eval
+            from rag.evaluation.retrieval_eval import run_evaluation as _eval
             _eval(mode=mode, top_k=top_k)
             logger.info(f"[EVALUATE] Completed live evaluation for mode={mode}")
         except Exception as e:
@@ -130,3 +130,59 @@ async def evaluate_with_judge(request: JudgeEvalRequest):
         answer=request.answer,
         judge_version=request.judge_version
     )
+
+
+# ── Current-corpus evaluation, judge validation, regression loop ─────────────
+
+import glob as _glob
+from typing import Literal
+from pydantic import BaseModel, Field
+from rag.services.evaluation_service import get_judge_validation, get_dataset_status
+from rag.evaluation.regression import REGRESSION_CASES, run_all_regression_cases
+
+
+class InsuranceRunRequest(BaseModel):
+    mode: Literal["semantic", "hybrid", "reranked"] = "hybrid"
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
+@router.get("/datasets", summary="Which evaluation datasets can be scored on the current index")
+async def datasets():
+    return {"datasets": get_dataset_status()}
+
+
+@router.get("/insurance/results", summary="Saved results of the current-corpus evaluation, per mode")
+async def insurance_results():
+    from rag.config import DATA_DIR
+    out = {}
+    for mode in ("semantic", "hybrid", "reranked"):
+        path = os.path.join(str(DATA_DIR), f"insurance_results_{mode}.json")
+        out[mode] = _load_result_file(path) or None
+    return out
+
+
+@router.post("/insurance/run", summary="Run the current-corpus evaluation for one retrieval mode")
+async def insurance_run(request: InsuranceRunRequest):
+    """Runs synchronously (12 questions, retrieval only: no LLM needed) and saves the result."""
+    try:
+        from rag.evaluation.retrieval_eval import run_text_evaluation
+        return run_text_evaluation(mode=request.mode, top_k=request.top_k)
+    except Exception as e:
+        logger.error(f"[EVALUATE] insurance run failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {e}")
+
+
+@router.get("/judge-validation", summary="Judge agreement with human labels")
+async def judge_validation():
+    return get_judge_validation()
+
+
+@router.get("/regression", summary="Failure-to-test loop: the permanent regression cases")
+async def regression_cases():
+    return {"cases": [{k: c[k] for k in ("id", "title", "origin", "notes", "incident_type", "expect_status")}
+                      for c in REGRESSION_CASES]}
+
+
+@router.post("/regression/run", summary="Run every regression case")
+async def regression_run():
+    return run_all_regression_cases()
