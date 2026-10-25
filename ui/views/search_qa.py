@@ -22,35 +22,43 @@ _LLM_DOWN = "LLM unavailable"
 ok_status, status = call(api.get_system_status, show_error=False)
 llm_up = bool(ok_status and status.get("components", {}).get("ollama_llm", {}).get("reachable"))
 
-# ── Sidebar controls ─────────────────────────────────────────
-with st.sidebar:
-    st.subheader("⚙️ Retrieval settings")
-    mode = st.selectbox(
-        "Retrieval mode",
-        options=["hybrid", "reranked", "semantic"],
-        help=("semantic: vector similarity only\n\n"
-              "hybrid: vector + BM25 keyword search fused with reciprocal rank fusion\n\n"
-              "reranked: hybrid, then a cross-encoder re-scores and MMR removes near-duplicates"),
-    )
-    top_k = st.slider("Passages to use (k)", 1, 10, 3)
-    sim_threshold = st.slider("Confidence threshold", 0.0, 1.0, 0.0, 0.05,
-                              help="The top passage must score at least this to count as a confident match")
-    use_rewriter = st.toggle("Rewrite the question first (needs local LLM)", value=llm_up,
-                             help="Uses the local LLM to turn a messy question into a better search. On by default only when the LLM is reachable.")
-    scan_injection = st.toggle("Scan retrieved context for prompt injection", value=False,
-                               help="Quarantines passages that contain hidden instructions before the LLM sees them (Week 8). Off by default.")
-
-    doc_filter = None
-    ok_docs, docs_data = call(api.list_documents, show_error=False)
-    documents = docs_data.get("documents", []) if ok_docs else []
-    if documents:
-        choice = st.selectbox("Search in", ["All documents"] + [d.get("filename") for d in documents])
-        if choice != "All documents":
-            doc_filter = choice
-
-
 if ok_status and not llm_up:
     ollama_notice("Written answers need the local LLM")
+
+# ── Search settings (on the page itself, so they are always visible) ──
+ok_docs, docs_data = call(api.list_documents, show_error=False)
+documents = docs_data.get("documents", []) if ok_docs else []
+
+with st.container(border=True):
+    st.markdown("##### ⚙️ Search settings")
+    col_mode, col_k, col_threshold = st.columns([1, 1, 1])
+    with col_mode:
+        mode = st.selectbox(
+            "Retrieval mode",
+            options=["hybrid", "reranked", "semantic"],
+            help=("semantic: vector similarity only\n\n"
+                  "hybrid: vector + BM25 keyword search fused with reciprocal rank fusion\n\n"
+                  "reranked: hybrid, then a cross-encoder re-scores and MMR removes near-duplicates"),
+        )
+    with col_k:
+        top_k = st.slider("Passages to use (k)", 1, 10, 3)
+    with col_threshold:
+        sim_threshold = st.slider("Confidence threshold", 0.0, 1.0, 0.0, 0.05,
+                                  help="The top passage must score at least this to count as a confident match")
+
+    col_rewrite, col_scan, col_doc = st.columns([1.6, 1.6, 1])
+    with col_rewrite:
+        use_rewriter = st.toggle("Rewrite the question first (needs local LLM)", value=llm_up,
+                                 help="Uses the local LLM to turn a messy question into a better search. On by default only when the LLM is reachable.")
+    with col_scan:
+        scan_injection = st.toggle("Scan retrieved context for prompt injection", value=False,
+                                   help="Quarantines passages that contain hidden instructions before the LLM sees them (Week 8). Off by default.")
+    with col_doc:
+        doc_filter = None
+        if documents:
+            choice = st.selectbox("Search in", ["All documents"] + [d.get("filename") for d in documents])
+            if choice != "All documents":
+                doc_filter = choice
 
 # ── Suggested questions ──────────────────────────────────────
 DEFAULT_QUESTIONS = [
@@ -66,6 +74,14 @@ suggestions = [(q["label"], q["query"]) for d in documents
 if not suggestions:
     suggestions = DEFAULT_QUESTIONS
 
+if "qa_question" not in st.session_state:
+    st.session_state["qa_question"] = DEFAULT_QUESTIONS[0][1]
+col_question, col_ask = st.columns([5, 1], vertical_alignment="bottom")
+with col_question:
+    question = st.text_input("Your question", key="qa_question")
+with col_ask:
+    ask_clicked = st.button("🔎 Ask", type="primary", width="stretch")
+
 st.markdown("##### 💡 Questions to try")
 cols = st.columns(3)
 
@@ -78,11 +94,7 @@ for idx, (label, text) in enumerate(suggestions):
     cols[idx % 3].button(f"📌 {label}", key=f"sq_{idx}", width="stretch",
                          on_click=_use_suggestion, args=(text,), help=text)
 
-if "qa_question" not in st.session_state:
-    st.session_state["qa_question"] = DEFAULT_QUESTIONS[0][1]
-question = st.text_input("Your question", key="qa_question")
-
-if st.button("🔎 Ask", type="primary", width="stretch"):
+if ask_clicked:
     if not question.strip():
         st.warning("Please enter a question.")
     else:
