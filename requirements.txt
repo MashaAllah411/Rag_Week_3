@@ -10,6 +10,7 @@ rank-bm25
 ollama
 python-dotenv
 numpy
+pandas
 pytesseract
 Pillow
 streamlit

@@ -66,7 +66,7 @@ python run.py --skip-setup     skip every check; start with the current Python
 
 # Importable names that must exist for the app to run (checked cheaply with find_spec, no imports).
 REQUIRED_MODULES = [
-    "fastapi", "uvicorn", "multipart", "streamlit", "requests", "httpx", "numpy", "dotenv",
+    "fastapi", "uvicorn", "multipart", "streamlit", "requests", "httpx", "numpy", "pandas", "dotenv",
     "pypdf", "PIL", "pytesseract", "chromadb", "rank_bm25", "sentence_transformers", "ollama",
     "opentelemetry.sdk", "pydantic",
 ]

@@ -2,7 +2,7 @@
 
 Everything runs on your machine. No account or API key is required. On a fresh machine you need Python and nothing else: `python run.py` sets up the rest by itself.
 
-- [Architecture](architecture.md) · [Features](features.md) · [Legacy index](legacy.md)
+- [Architecture](architecture.md) · [Features](features.md) · [Legacy index](legacy.md) · [Technical reference](technical-reference.md)
 
 ## On a fresh machine
 

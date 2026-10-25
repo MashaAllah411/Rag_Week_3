@@ -2,7 +2,7 @@
 
 An insurance policy and claims assistant: upload policy PDFs, ask questions and get cited answers, triage claims with agents, and inspect, evaluate and trace everything from one UI. It covers the Week 1-12 curriculum as one application, with open-source tooling throughout.
 
-- [Setup](setup.md) · [Features](features.md) · [Legacy index](legacy.md) · [Weekly notes](weekly/README.md)
+- [Setup](setup.md) · [Features](features.md) · [Legacy index](legacy.md) · [Weekly notes](weekly/README.md) · [Technical reference](technical-reference.md)
 
 ## System at a glance
 

@@ -2,7 +2,7 @@
 
 One section per capability. Each says which week it comes from, where to use it in the UI, which API endpoints back it, and how real it is.
 
-- [Architecture](architecture.md) · [Setup](setup.md) · [Legacy index](legacy.md)
+- [Architecture](architecture.md) · [Setup](setup.md) · [Legacy index](legacy.md) · [Technical reference](technical-reference.md)
 
 **Status legend:** *Live* = real computation. *Scripted* = real protocol and bookkeeping with scripted decisions. *Simulated* = generated or estimated data, labelled as such in the UI. *Needs Ollama* = needs the local LLM. *Added* = built in the consolidation pass because the task brief asked for it and the UI had no way to use it.
 

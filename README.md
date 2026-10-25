@@ -8,6 +8,7 @@ Upload insurance policy PDFs, ask questions and get cited answers, triage claims
 |---|---|
 | [docs/setup.md](docs/setup.md) | install, configure, run, test, troubleshoot |
 | [docs/architecture.md](docs/architecture.md) | design, diagrams, data flow, tool choices and the open-source swaps |
+| [docs/technical-reference.md](docs/technical-reference.md) | packages and where they are used, monitoring and dashboards, fresh-machine setup, exact PowerShell commands, verification and troubleshooting |
 | [docs/features.md](docs/features.md) | every capability by week: what it does, where to use it, endpoints, how real it is |
 | [docs/legacy.md](docs/legacy.md) | everything archived in `legacy/`: old path, replacement, reason |
 | [docs/weekly/](docs/weekly/README.md) | historical weekly notes |

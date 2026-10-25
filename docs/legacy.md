@@ -2,7 +2,7 @@
 
 Everything superseded, duplicated or no longer used was moved into `legacy/` instead of being deleted. Nothing was dropped silently. Files are grouped by the week or feature they belong to.
 
-- [Architecture](architecture.md) · [Setup](setup.md) · [Features](features.md)
+- [Architecture](architecture.md) · [Setup](setup.md) · [Features](features.md) · [Technical reference](technical-reference.md)
 
 > **Archived scripts are for reference only.** They import module paths from before the consolidation (for example `rag.core.retrieval...`, `rag.infra...`, `rag.scripts.main_rag`) and some expect to run from the repo root with sibling modules. They are kept as a record, not as runnable tools. Use the replacement listed for each.
 

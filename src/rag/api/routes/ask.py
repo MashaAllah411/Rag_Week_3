@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.post("/ask", response_model=AskResponse, summary="Ask a question against the HR Policy")
+@router.post("/ask", response_model=AskResponse, summary="Ask a question against the indexed policy documents")
 async def ask(request: AskRequest):
     """
     Runs the RAG pipeline for the given question.

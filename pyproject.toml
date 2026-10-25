@@ -19,6 +19,7 @@ dependencies = [
     "ollama",
     "python-dotenv",
     "numpy",
+    "pandas",
     "pytesseract",
     "Pillow",
     "streamlit",
