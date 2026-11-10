@@ -1,0 +1,81 @@
+{
+  "trace_id": "trc_hr_9912a7f0",
+  "timestamp": "2026-11-10T18:35:00.124Z",
+  "service_name": "hr-policy-desk",
+  "client_origin": "http://localhost:8501/hr-policy-desk",
+  "asker_emp_id": "[REDACTED_ID]",
+  "resolved_profile": {
+    "grade": "[REDACTED_GRADE]",
+    "salary_band": "[REDACTED_SALARY_BAND]",
+    "entity": "India",
+    "location": "Chennai",
+    "tenure_years": 2.5
+  },
+  "raw_query": "What is my primary caregiver maternity leave entitlement?",
+  "redacted_query": "What is my primary caregiver maternity leave entitlement?",
+  "spans": [
+    {
+      "span_id": "spn_001_emp_lookup",
+      "parent_span_id": null,
+      "name": "tool:lookup_employee_record",
+      "status": "OK",
+      "start_time_ms": 0.0,
+      "duration_ms": 1.2,
+      "tokens_in": 12,
+      "tokens_out": 28,
+      "cost_usd": 0.00008,
+      "attributes": {
+        "tool_name": "lookup_employee_record",
+        "resolved_entity": "India",
+        "resolved_grade": "[REDACTED_GRADE]"
+      }
+    },
+    {
+      "span_id": "spn_002_mcp_scoped_retrieval",
+      "parent_span_id": "spn_001_emp_lookup",
+      "name": "mcp:search_policy_scoped",
+      "status": "OK",
+      "start_time_ms": 2.1,
+      "duration_ms": 68.4,
+      "tokens_in": 35,
+      "tokens_out": 142,
+      "cost_usd": 0.00045,
+      "attributes": {
+        "mcp_server": "hr_policy_server",
+        "protocol": "json-rpc-2.0",
+        "scope": "India",
+        "retrieved_chunks": [
+          "entity-annex-india:chunk_1",
+          "employee-handbook:chunk_4"
+        ],
+        "annex_silently_won": true
+      }
+    },
+    {
+      "span_id": "spn_003_grounded_synthesis",
+      "parent_span_id": null,
+      "name": "llm:generate_grounded_answer",
+      "status": "OK",
+      "start_time_ms": 71.0,
+      "duration_ms": 642.0,
+      "tokens_in": 380,
+      "tokens_out": 94,
+      "cost_usd": 0.00285,
+      "attributes": {
+        "model": "llama3.2",
+        "temperature": 0.2,
+        "citations_generated": 2,
+        "policy_version_verified": "2025"
+      }
+    }
+  ],
+  "total_latency_ms": 714.2,
+  "total_tokens": 691,
+  "total_cost_usd": 0.00338,
+  "pii_redacted": true,
+  "final_answer": "As an employee in the India entity (Chennai), the India Entity Annex (Clause IN-1.1) silently supersedes the general handbook under the Maternity Benefit (Amendment) Act. You are entitled to 26 weeks of fully paid maternity leave for the first two surviving children.",
+  "citations": [
+    "[Policy: Entity Annex India | Version: 2025 | Effective: 2025-01-01 | Clause: IN-1.1 Statutory Maternity Benefit Act]",
+    "[Policy: Acme Handbook v3.0 | Version: 2025 | Effective: 2025-01-01 | Clause: 2.3 (Overridden by India Annex)]"
+  ]
+}

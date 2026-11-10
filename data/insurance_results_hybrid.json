@@ -197,7 +197,7 @@
       "retrieved_ids": [
         "insurancepolicy:chunk_25",
         "commercial-vehicles-package-policy-93ee460add:chunk_45",
-        "commercial-vehicles-package-policy-93ee460add:chunk_48"
+        "entity-annex-uk:chunk_0"
       ],
       "relevant_flags": [
         true,
@@ -217,12 +217,12 @@
       "retrieved_ids": [
         "insurancepolicy:chunk_38",
         "commercial-vehicles-package-policy-93ee460add:chunk_31",
-        "insurancepolicy:chunk_37"
+        "commercial-vehicles-package-policy-93ee460add:chunk_32"
       ],
       "relevant_flags": [
         true,
         false,
-        true
+        false
       ],
       "hit": 1,
       "recall": 1.0,

@@ -43,8 +43,25 @@ Pages are grouped in the sidebar by what you are trying to do:
 | Evaluate | Evaluation (Weeks 4, 6, 11), Error Analysis (Week 5) |
 | Agents | Agent Triage (Weeks 7-8), MCP Ecosystem (Week 9), Multi-Agent Squad (Week 10) |
 | Production | Observability (Weeks 5, 11) |
-| Capstone | Capstone (Week 12) |
+| Capstone | Capstone (Week 12), HR Policy Desk (Variant C) |
 | System | System & Health |
+
+### Week 12 Capstone — Variant C: HR Policy Answer Desk
+To run and test Variant C (HR Policy across India & UK entities):
+1. Launch with `python run.py`.
+2. Open `http://localhost:8501` and navigate to **Capstone ➔ HR Policy Desk (Variant C)** in the sidebar.
+3. Test pre-configured scenarios:
+   - **Entity Annex Silent Override:** India Maternity 26 weeks silently beating 12/16w handbook.
+   - **Superseded Version Citation:** March 2024 parental leave query citing the 2024 policy with effective dates.
+   - **Discretionary Escalation:** Sabbaticals >3 months auto-escalate to an HRBP with ticket SLA.
+   - **Adversarial Colleague Privacy:** Refusal on coworker inquiries without leaking Grade or PII.
+4. Run the 25-case evaluation suite directly from the second tab. Detailed submission docs are in `docs/`:
+   - `docs/tuesday_seam_list.md` (Tuesday's unedited seam list)
+   - `docs/architecture_sketch.md` (One-page architecture & cost sketch)
+   - `docs/eval_report.md` (25-case eval report with stated non-coverage)
+   - `docs/top_3_weaknesses.md` (Top 3 unprompted weaknesses dated Wednesday)
+   - `docs/fresh_eyes_note.md` (Thursday peer reviewer audit note)
+   - `traces/sample_variant_c_trace.json` (End-to-end trace with PII line held)
 
 The System page shows which tools are actually running and can run a real self-test of each.
 

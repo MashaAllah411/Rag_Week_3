@@ -6,7 +6,7 @@
   "corpus": "current insurance PDFs (resources/)",
   "hit_rate": 0.9167,
   "recall": 0.9167,
-  "mrr": 0.6528,
+  "mrr": 0.6111,
   "per_question": [
     {
       "id": "ins_01",
@@ -195,18 +195,18 @@
         "Nepal, Sri Lanka, Maldives, Bhutan, Pakistan, Bangladesh"
       ],
       "retrieved_ids": [
+        "entity-annex-uk:chunk_0",
         "insurancepolicy:chunk_25",
-        "commercial-vehicles-package-policy-93ee460add:chunk_56",
-        "commercial-vehicles-package-policy-93ee460add:chunk_45"
+        "entity-annex-india:chunk_0"
       ],
       "relevant_flags": [
-        true,
         false,
+        true,
         false
       ],
       "hit": 1,
       "recall": 1.0,
-      "reciprocal_rank": 1.0
+      "reciprocal_rank": 0.5
     },
     {
       "id": "ins_11",
