@@ -402,7 +402,13 @@ class ApiClient:
     def get_hr_taxonomy(self) -> List[Dict[str, Any]]:
         return self._get("/api/hr/taxonomy")
 
+    def get_hr_error_taxonomy(self) -> List[Dict[str, Any]]:
+        return self._get("/api/hr/taxonomy")
+
     def get_hr_trajectory(self) -> Dict[str, Any]:
+        return self._get("/api/hr/trajectory")
+
+    def get_hr_trajectory_eval(self) -> Dict[str, Any]:
         return self._get("/api/hr/trajectory")
 
     def get_hr_demo(self) -> Dict[str, Any]:
