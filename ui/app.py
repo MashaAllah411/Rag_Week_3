@@ -47,6 +47,7 @@ PAGES = {
     ],
     "Capstone": [
         st.Page("views/capstone.py", title="Capstone", icon="🏁", url_path="capstone"),
+        st.Page("views/hr_policy_desk.py", title="HR Policy Desk (Variant C)", icon="🏢", url_path="hr-policy-desk"),
     ],
     "System": [
         st.Page("views/system.py", title="System & Health", icon="⚙️", url_path="system"),

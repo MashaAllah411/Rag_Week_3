@@ -23,7 +23,13 @@ STATUS_TONE = {"pass": "ok", "fail": "bad", "skipped": "warn"}
 SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
 SEVERITY_TONE = {"high": "bad", "medium": "warn", "low": "week"}
 
-tab_suite, tab_weak, tab_demo, tab_pack = st.tabs(["▶️ Run the full suite", "⚠️ Known weak spots", "🎤 Four-part demo", "📦 Packaging checklist"])
+tab_suite, tab_weak, tab_demo, tab_pack, tab_variant_c = st.tabs([
+    "▶️ Run the full suite",
+    "⚠️ Known weak spots",
+    "🎤 Four-part demo",
+    "📦 Packaging checklist",
+    "🏢 Variant C (HR Policy Desk)"
+])
 
 # ── Full suite ───────────────────────────────────────────────
 with tab_suite:
@@ -117,6 +123,22 @@ with tab_pack:
         if st.checkbox(text, key=f"pack_{key}"):
             done += 1
     st.progress(done / len(items), text=f"{done} of {len(items)} done")
+
+# ── Variant C (HR Policy Desk) ───────────────────────────────
+with tab_variant_c:
+    st.subheader("Variant C: Policy Answer Desk (HR Shared Services)")
+    st.markdown(
+        "Complete implementation for **Variant C (HR Policy across India & UK entities)**: "
+        "resolves Grade Band (1-7) & Entity before answering, enforces Entity Annex silent overrides, "
+        "cites Policy Version & Effective Date, escalates discretionary items to HRBP, and protects coworker PII."
+    )
+    info_card(
+        "<b>Dedicated Interactive Desk Available:</b> Navigate to <b>HR Policy Desk (Variant C)</b> in the sidebar for the live query engine, "
+        "the 25-case eval suite, the 5-mode error taxonomy, trajectory evaluations, and the four-part demo script.",
+        "ok"
+    )
+    if st.button("👉 Open Dedicated HR Policy Desk", type="primary"):
+        st.switch_page("views/hr_policy_desk.py")
     try:
         st.page_link("views/documentation.py", label="Open the Documentation page", icon="📖")
     except Exception:

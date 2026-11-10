@@ -140,6 +140,17 @@ def read_pdf(
     if not os.path.exists(pdf_path):
         raise FileNotFoundError(f"The file {pdf_path} does not exist.")
 
+    if str(pdf_path).lower().endswith((".md", ".txt")):
+        with open(pdf_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+        sections = [s.strip() for s in content.split("\n## ") if s.strip()]
+        if not sections:
+            sections = [content.strip()]
+        else:
+            # re-attach prefix for sections after split
+            sections = [sections[0]] + ["## " + s for s in sections[1:]]
+        return sections
+
     reader = PdfReader(pdf_path)
     pages = []
     min_w, min_h = min_image_size

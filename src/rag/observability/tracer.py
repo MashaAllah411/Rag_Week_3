@@ -76,6 +76,31 @@ def redact_pii(text: str) -> str:
         redacted
     )
 
+    # Variant C Capstone: Redact Grade, Salary Band, and Leave Balance from logs
+    # Grade Band (e.g., Grade 3, Grade 6, Band 4)
+    redacted = re.sub(
+        r'\b(Grade\s+[1-7]|Band\s+[1-7])\b',
+        '[REDACTED_GRADE]',
+        redacted,
+        flags=re.IGNORECASE
+    )
+
+    # Salary / Compensation Bands
+    redacted = re.sub(
+        r'(\$|£|INR|Rs\.?)\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?\b|\b(salary\s+band\s+[A-Z0-9]+)\b',
+        '[REDACTED_SALARY_BAND]',
+        redacted,
+        flags=re.IGNORECASE
+    )
+
+    # Leave balances (e.g., 14 days annual leave, 22 days leave balance)
+    redacted = re.sub(
+        r'\b\d+\s+(?:days?|calendar days?)\s+(?:of\s+)?(?:annual|sick|casual|maternity|paternity|remaining)?\s*(?:leave|balance)\b',
+        '[REDACTED_LEAVE_BALANCE]',
+        redacted,
+        flags=re.IGNORECASE
+    )
+
     # Specific common synthetic PII names
     known_pii_names = [
         "John Doe", "Jane Doe", "Alice Johnson", "Bob Smith", "Mary Jane",

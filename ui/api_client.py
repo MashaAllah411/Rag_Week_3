@@ -388,5 +388,28 @@ class ApiClient:
     def capstone_demo(self) -> Dict[str, Any]:
         return self._get("/api/capstone/demo")
 
+    # ── Variant C: HR Policy Desk ────────────────────────────
+
+    def get_hr_employees(self) -> List[Dict[str, Any]]:
+        return self._get("/api/hr/employees")
+
+    def ask_hr_policy(self, emp_id: str, question: str, override_year: Optional[int] = None) -> Dict[str, Any]:
+        body = {"emp_id": emp_id, "question": question}
+        if override_year:
+            body["override_year"] = override_year
+        return self._post("/api/hr/ask", body, timeout=60.0)
+
+    def get_hr_taxonomy(self) -> List[Dict[str, Any]]:
+        return self._get("/api/hr/taxonomy")
+
+    def get_hr_trajectory(self) -> Dict[str, Any]:
+        return self._get("/api/hr/trajectory")
+
+    def get_hr_demo(self) -> Dict[str, Any]:
+        return self._get("/api/hr/demo")
+
+    def run_hr_eval_suite(self) -> Dict[str, Any]:
+        return self._post("/api/hr/eval/run", timeout=180.0)
+
 
 api = ApiClient()

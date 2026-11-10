@@ -35,6 +35,7 @@ from rag.api.routes import (
     foundations,
     guardrails,
     capstone,
+    hr_desk,
 )
 
 # ── Startup / shutdown ───────────────────────────────────────
@@ -95,6 +96,7 @@ app.include_router(system.router,        prefix="/api/system",       tags=["Syst
 app.include_router(foundations.router,   prefix="/api/foundations",  tags=["Foundations Lab (Week 1)"])
 app.include_router(guardrails.router,    prefix="/api/guardrails",   tags=["Guardrails & Structured Output (Weeks 2, 8)"])
 app.include_router(capstone.router,      prefix="/api/capstone",     tags=["Capstone (Week 12)"])
+app.include_router(hr_desk.router,       tags=["HR Policy Desk (Variant C)"])
 
 
 # ── Root & Health check ──────────────────────────────────────

@@ -1,6 +1,9 @@
+import logging
 from sentence_transformers import SentenceTransformer
 from typing import List
 from rag.config import EMBEDDING_MODEL
+
+logger = logging.getLogger(__name__)
 
 # Lazy-load the sentence-transformers model to avoid heavy import-time work.
 _model = None
@@ -23,16 +26,16 @@ def embed_chunks(chunks: List[str]) -> List[List[float]]:
     """Embeds chunks using the configured sentence-transformers model (EMBEDDING_MODEL)."""
 
     model = _get_model()
-    print(f"   🔄 Embedding {len(chunks)} chunks locally (no API needed)...")
+    logger.info(f"Embedding {len(chunks)} chunks locally (no API needed)...")
 
     # Encode all chunks at once (faster than one-by-one)
-    embeddings = model.encode(chunks, show_progress_bar=True)
+    embeddings = model.encode(chunks, show_progress_bar=False)
 
     # Convert numpy arrays to plain Python lists for ChromaDB
     embeddings = [embedding.tolist() for embedding in embeddings]
 
     if embeddings and embeddings[0]:
-        print(f"   ✅ Sample embedding (first value): {embeddings[0][0]:.6f}")
+        logger.info(f"Sample embedding (first value): {embeddings[0][0]:.6f}")
 
     return embeddings
 

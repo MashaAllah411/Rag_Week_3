@@ -31,17 +31,42 @@ def _set_state(**changes: Any) -> None:
         _index_state.update(changes)
 
 
+def _extract_doc_meta(filename: str) -> Dict[str, str]:
+    fn = filename.lower()
+    version = "1.0"
+    effective = "2025-01-01"
+    entity = "Global"
+    if "2024" in fn:
+        version = "2024 (v1.0)"
+        effective = "2024-01-01"
+    elif "2025" in fn or "v3" in fn:
+        version = "2025 (v3.0)"
+        effective = "2025-01-01"
+    if "addendum" in fn:
+        version = "2025 Addendum A"
+        effective = "2025-07-01"
+    if "india" in fn:
+        entity = "India"
+    elif "uk" in fn:
+        entity = "UK"
+    return {"policy_version": version, "effective_date": effective, "entity_scope": entity}
+
+
 def run(pdf_path=DEFAULT_DOCUMENT_PATH):
     pdf_path = Path(pdf_path)
     pages = read_pdf(str(pdf_path))
     chunks = chunk_pages(pages)
     embeddings = embed_chunks(chunks)
     doc_id = document_id(pdf_path.name)
+    extra_meta = _extract_doc_meta(pdf_path.name)
     metadata = [
         {
             "chunk_id": f"{doc_id}:chunk_{index}",
             "document_id": doc_id,
             "document_name": pdf_path.name,
+            "policy_version": extra_meta["policy_version"],
+            "effective_date": extra_meta["effective_date"],
+            "entity_scope": extra_meta["entity_scope"],
         }
         for index in range(len(chunks))
     ]
@@ -52,20 +77,30 @@ def run(pdf_path=DEFAULT_DOCUMENT_PATH):
 
 
 def reindex_all() -> int:
-    """Replace vectors for every PDF in resources with document-aware IDs."""
+    """Replace vectors for every PDF and Markdown policy in resources with document-aware IDs."""
     total_chunks = 0
-    pdfs = sorted(RESOURCES_DIR.glob("*.pdf"))
+    all_files = sorted(list(RESOURCES_DIR.glob("*.pdf")) +
+                       list(RESOURCES_DIR.glob("**/*.pdf")) +
+                       list(RESOURCES_DIR.glob("**/*.md")))
+    # Deduplicate while preserving order
+    seen = set()
+    files = []
+    for f in all_files:
+        if f.name not in seen and f.name != "README.md" and f.name != "RAG_Explainer.md":
+            seen.add(f.name)
+            files.append(f)
+
     _set_state(state="indexing", last_error=None, documents_done=0)
     try:
-        for pdf_path in pdfs:
-            _set_state(current=pdf_path.name)
-            total_chunks += run(pdf_path)
+        for file_path in files:
+            _set_state(current=file_path.name)
+            total_chunks += run(file_path)
             _set_state(documents_done=get_index_state()["documents_done"] + 1)
     except Exception as exc:
         _set_state(state="error", current=None, last_error=str(exc))
         raise
     _set_state(state="idle", current=None)
-    logger.info("Re-indexed %s PDFs (%s chunks)", len(pdfs), total_chunks)
+    logger.info("Re-indexed %s documents (%s chunks)", len(files), total_chunks)
     return total_chunks
 
 
