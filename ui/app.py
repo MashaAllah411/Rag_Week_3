@@ -7,7 +7,46 @@ FastAPI backend only through ui/api_client.py.
 
 Run the whole stack with:  python run.py
 """
+import sys
+import os
+import threading
+import time
+import urllib.request
+from pathlib import Path
 import streamlit as st
+
+# Ensure src and repo root are in sys.path regardless of execution context (e.g. Streamlit Cloud)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+
+@st.cache_resource(show_spinner=False)
+def _ensure_backend_started() -> bool:
+    """On Streamlit Cloud or standalone runs, auto-start FastAPI backend in a daemon thread."""
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=0.8) as resp:
+            if resp.status == 200:
+                return True
+    except Exception:
+        pass
+
+    try:
+        import uvicorn
+        from rag.api.main import app as fastapi_app
+        config = uvicorn.Config(fastapi_app, host="127.0.0.1", port=8000, log_level="warning")
+        server = uvicorn.Server(config)
+        t = threading.Thread(target=server.run, daemon=True)
+        t.start()
+        time.sleep(1.5)
+        return True
+    except Exception:
+        return False
+
+
+_ensure_backend_started()
 
 from ui.api_client import api
 from ui.components import apply_theme, persist_theme_across_pages, pill
