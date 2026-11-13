@@ -266,7 +266,9 @@ def run_pipeline(
             llm_fn = _get_llm()
             context = "\n\n---\n\n".join(c["text"] for c in raw_chunks)
             answer = llm_fn(question, context)
-            pipeline_steps.append("LLM grounded answer generated (Llama 3.2)")
+            from rag.config import LLM_PROVIDER, GROQ_MODEL, OLLAMA_MODEL
+        _active_model = GROQ_MODEL if LLM_PROVIDER.lower() == "groq" else OLLAMA_MODEL
+        pipeline_steps.append(f"LLM grounded answer generated ({LLM_PROVIDER.upper()}: {_active_model})")
             logger.info("[PIPELINE] LLM answer generated.")
         except Exception as e:
             logger.error(f"[PIPELINE] LLM call failed: {e}")
@@ -291,7 +293,7 @@ def run_pipeline(
             raw_llm_output=answer,
             prompt_version="v1.0",
             retriever_type=f"Web API ({mode})",
-            model_name="llama3.2",
+            model_name=f"{LLM_PROVIDER}:{_active_model}",
             model_parameters={"temperature": 0.4, "top_p": 0.9}
         )
         pipeline_steps.append("PII-redacted trace logged to traces/traces.jsonl")

@@ -16,6 +16,10 @@ FAILURE_LABELS_PATH = DATA_DIR / "failure_labels.json"
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 RERANKER_MODEL = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
+# LLM provider: "groq" (cloud, fast, free tier) or "ollama" (local)
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 # Vector store (ChromaDB, embedded + persistent; replaces the hosted Pinecone service)
 VECTOR_STORE_DIR = Path(os.getenv("VECTOR_STORE_DIR", str(DATA_DIR / "vectorstore")))
 if not VECTOR_STORE_DIR.is_absolute():
