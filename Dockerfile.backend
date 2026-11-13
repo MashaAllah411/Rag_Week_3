@@ -1,0 +1,26 @@
+FROM python:3.11-slim
+
+# Install system dependencies including Tesseract OCR for PDF image parsing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    libtesseract-dev \
+    poppler-utils \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application source code
+COPY src/ /app/src/
+COPY resources/ /app/resources/
+COPY data/ /app/data/
+COPY pyproject.toml .env* /app/
+
+ENV PYTHONPATH=/app/src:/app
+EXPOSE 8000
+
+CMD ["uvicorn", "rag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
