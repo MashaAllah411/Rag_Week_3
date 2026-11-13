@@ -3,7 +3,7 @@ ui/views/chat_main.py
 
 Production ChatGPT-style conversation workspace.
 Features:
-- "Where should we begin?" empty state with suggestion pills
+- "Where should we begin?" empty state with suggestion rows
 - Live step-by-step thinking indicator
 - Citations accordion with chunk scores and source document references
 - Context token gauge
@@ -40,124 +40,153 @@ def render_chat_interface():
 
     messages = st.session_state["messages"]
 
-    # ── Global ChatGPT Pill Styling for Inputs ───────────────
+    # ── Global ChatGPT-style input styling ───────────────────
     st.markdown(
         """
         <style>
+        /* Pill-shaped chat input */
         [data-testid="stChatInput"] {
-            border-radius: 28px !important;
-            border: 1px solid rgba(128, 128, 128, 0.25) !important;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06) !important;
-            padding: 4px 14px !important;
+            border-radius: 24px !important;
+            border: 1px solid rgba(128, 128, 128, 0.2) !important;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+            padding: 2px 8px !important;
+            max-width: 820px !important;
+            margin: 0 auto !important;
+        }
+        [data-testid="stChatInput"]:focus-within {
+            border-color: rgba(37, 99, 235, 0.4) !important;
+            box-shadow: 0 2px 16px rgba(37, 99, 235, 0.08) !important;
         }
         [data-testid="stChatInputSubmitButton"] {
             border-radius: 50% !important;
             background-color: #2563eb !important;
             color: white !important;
         }
+        [data-testid="stChatInputSubmitButton"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        /* Hero form styling for landing page */
+        div[data-testid="stForm"] {
+            border-radius: 28px !important;
+            border: 1px solid rgba(128, 128, 128, 0.18) !important;
+            box-shadow: 0 2px 20px -2px rgba(0, 0, 0, 0.06) !important;
+            padding: 2px 8px !important;
+            background: var(--secondary-background-color, #ffffff) !important;
+            max-width: 680px !important;
+            margin: 0 auto !important;
+        }
+        div[data-testid="stForm"] div[data-testid="stTextInput"] input {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            font-size: 0.95rem !important;
+            padding: 8px 4px !important;
+        }
+        div[data-testid="stForm"] div[data-testid="stTextInput"] input:focus {
+            box-shadow: none !important;
+        }
+        div[data-testid="stForm"] button[kind="primaryFormSubmit"] {
+            border-radius: 50% !important;
+            width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            padding: 0 !important;
+            font-size: 1.1rem !important;
+            background-color: #2563eb !important;
+            color: white !important;
+            border: none !important;
+        }
+        div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        /* Suggestion rows – clean, borderless */
+        .suggestion-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-size: 0.9rem;
+            color: inherit;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .suggestion-row:hover {
+            background: rgba(128, 128, 128, 0.06);
+        }
+        .suggestion-icon {
+            font-size: 1rem;
+            opacity: 0.5;
+            flex-shrink: 0;
+        }
+        .suggestion-text {
+            opacity: 0.7;
+        }
+
+        /* Chat message styling */
+        [data-testid="stChatMessage"] {
+            max-width: 820px !important;
+            margin: 0 auto !important;
+        }
+
+        /* Context indicator */
+        .ctx-indicator {
+            text-align: right;
+            padding: 4px 0;
+        }
+        .ctx-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ── Top Bar: Context Window Indicator ────────────────────
-    total_tokens = sum(_approx_tokens(m.get("content", "")) for m in messages)
-    context_limit = 4096
-    pct = min(100, int((total_tokens / context_limit) * 100))
-    tone = "bad" if pct > 85 else ("warn" if pct > 60 else "ok")
-
-    t_col1, t_col2 = st.columns([4, 1])
-    with t_col1:
-        active_title = st.session_state.get("current_chat_title", "Conversation")
-        st.markdown(f"#### 💬 {active_title}")
-    with t_col2:
-        st.markdown(
-            f"""
-            <div style="text-align: right; padding-top: 5px;">
-                <span style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;">
-                    Context: {total_tokens:,} / {context_limit:,} toks
-                </span>
-                {pill(f"{pct}%", tone)}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-
-    # ── Empty State: Greeting & Hero Search Bar (ChatGPT-style) ──
+    # ── Empty State: Greeting & Hero Search Bar ──────────────
     if not messages:
-        # Hide bottom pinned chat input when on landing screen
+        # Hide bottom pinned chat input on landing
         st.markdown(
             """
             <style>
-            [data-testid="stChatInput"] {
-                display: none !important;
-            }
-            div[data-testid="stForm"] {
-                border-radius: 32px !important;
-                border: 1px solid rgba(128, 128, 128, 0.22) !important;
-                box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.08) !important;
-                padding: 4px 12px 4px 12px !important;
-                background: var(--secondary-background-color, #ffffff) !important;
-            }
-            div[data-testid="stForm"] div[data-testid="stTextInput"] input {
-                border: none !important;
-                background: transparent !important;
-                box-shadow: none !important;
-                font-size: 1.02rem !important;
-            }
-            div[data-testid="stForm"] button[kind="primaryFormSubmit"] {
-                border-radius: 50% !important;
-                width: 36px !important;
-                height: 36px !important;
-                min-height: 36px !important;
-                padding: 0 !important;
-                font-size: 1.15rem !important;
-                font-weight: 700 !important;
-                background-color: #2563eb !important;
-                color: white !important;
-                border: none !important;
-            }
-            .chatgpt-sug button {
-                text-align: left !important;
-                justify-content: flex-start !important;
-                background: transparent !important;
-                border: none !important;
-                color: inherit !important;
-                font-size: 0.92rem !important;
-                padding: 8px 12px !important;
-                border-radius: 10px !important;
-            }
-            .chatgpt-sug button:hover {
-                background: rgba(128, 128, 128, 0.08) !important;
-            }
+            [data-testid="stChatInput"] { display: none !important; }
             </style>
-            <div style="text-align: center; margin: 6vh auto 20px auto; max-width: 680px;">
-                <h1 style="font-size: 2.3rem; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em;">
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Centered greeting
+        st.markdown(
+            """
+            <div style="text-align: center; margin: 10vh auto 28px auto; max-width: 680px;">
+                <h1 style="font-size: 2rem; font-weight: 600; margin-bottom: 0;
+                    letter-spacing: -0.02em; color: inherit;">
                     Where should we begin?
                 </h1>
+                <p style="font-size: 0.88rem; color: #94a3b8; margin-top: 8px;">
+                    Ask questions across your policy documents, claims rules, or employee guidelines.
+                </p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        _, center_col, _ = st.columns([1, 4.6, 1])
+        # Hero input bar
+        _, center_col, _ = st.columns([1.2, 4, 1.2])
         with center_col:
             with st.form("hero_chat_form", clear_on_submit=True):
-                col_plus, col_input, col_think, col_mic, col_btn = st.columns([0.6, 6.2, 1.3, 0.7, 0.8])
-                with col_plus:
-                    st.markdown("<div style='font-size: 1.35rem; padding-top: 6px; text-align: center; color: #64748b; font-weight: 300;'>➕</div>", unsafe_allow_html=True)
+                col_input, col_btn = st.columns([8, 1])
                 with col_input:
                     hero_query = st.text_input(
                         "Ask DocChat Pro...",
                         label_visibility="collapsed",
-                        placeholder="Ask DocChat Pro...",
+                        placeholder="Ask anything about your documents...",
                     )
-                with col_think:
-                    st.markdown("<div style='padding-top: 9px; font-size: 0.82rem; color: #64748b; font-weight: 500; text-align: center;'>🧠 Think</div>", unsafe_allow_html=True)
-                with col_mic:
-                    st.markdown("<div style='font-size: 1.15rem; padding-top: 7px; text-align: center; color: #64748b;'>🎙️</div>", unsafe_allow_html=True)
                 with col_btn:
                     hero_submit = st.form_submit_button("↑", type="primary")
 
@@ -165,27 +194,79 @@ def render_chat_interface():
                     st.session_state["pending_prompt"] = hero_query.strip()
                     st.rerun()
 
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+        # Suggestion rows (clean, icon + text, no borders)
+        st.markdown('<div style="height: 16px;"></div>', unsafe_allow_html=True)
 
-            # Clean list of suggestions (matching ChatGPT's vertical icon list)
-            st.markdown('<div class="chatgpt-sug">', unsafe_allow_html=True)
-            if st.button("📄  What is the schedule of depreciation for fixing IDV?", key="sug_idv", use_container_width=True):
-                st.session_state["pending_prompt"] = "What is the schedule of depreciation for fixing IDV?"
-                st.rerun()
-            if st.button("🏖️  What is my annual leave entitlement under the policy?", key="sug_leave", use_container_width=True):
-                st.session_state["pending_prompt"] = "What is my annual leave entitlement under the policy?"
-                st.rerun()
-            if st.button("🛡️  What are the exclusions under Section 1 Own Damage?", key="sug_damage", use_container_width=True):
-                st.session_state["pending_prompt"] = "What are the exclusions under Section 1 Own Damage?"
-                st.rerun()
-            if st.button("📋  How do I escalate a discretionary approval to an HRBP?", key="sug_hrbp", use_container_width=True):
-                st.session_state["pending_prompt"] = "How do I escalate a discretionary approval to an HRBP?"
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+        suggestions = [
+            ("📄", "What is the schedule of depreciation for fixing IDV?"),
+            ("🏖️", "What is my annual leave entitlement under the policy?"),
+            ("🛡️", "What are the exclusions under Section 1 Own Damage?"),
+            ("📋", "How do I escalate a discretionary approval to an HRBP?"),
+        ]
 
-        st.markdown("<div style='height: 40px;'></div>", unsafe_allow_html=True)
+        _, sug_col, _ = st.columns([1.2, 4, 1.2])
+        with sug_col:
+            for icon, text in suggestions:
+                if st.button(
+                    f"{icon}  {text}",
+                    key=f"sug_{text[:12]}",
+                    use_container_width=True,
+                ):
+                    st.session_state["pending_prompt"] = text
+                    st.rerun()
 
-    # ── Message History Rendering ────────────────────────────
+        # Style suggestion buttons to look like flat rows
+        st.markdown(
+            """
+            <style>
+            /* Target suggestion buttons specifically */
+            div[data-testid="stVerticalBlock"] button[kind="secondary"] {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                text-align: left !important;
+                justify-content: flex-start !important;
+                padding: 10px 14px !important;
+                font-size: 0.88rem !important;
+                font-weight: 400 !important;
+                border-radius: 10px !important;
+                color: #64748b !important;
+            }
+            div[data-testid="stVerticalBlock"] button[kind="secondary"]:hover {
+                background: rgba(128, 128, 128, 0.06) !important;
+                color: inherit !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        return  # Don't render chat input or history on landing
+
+    # ── Active Conversation Header ───────────────────────────
+    total_tokens = sum(_approx_tokens(m.get("content", "")) for m in messages)
+    context_limit = 4096
+    pct = min(100, int((total_tokens / context_limit) * 100))
+
+    h_col1, h_col2 = st.columns([5, 1])
+    with h_col1:
+        active_title = st.session_state.get("current_chat_title", "Conversation")
+        st.markdown(
+            f'<div style="font-size: 1.05rem; font-weight: 600; padding: 6px 0;">{active_title}</div>',
+            unsafe_allow_html=True,
+        )
+    with h_col2:
+        tone = "bad" if pct > 85 else ("warn" if pct > 60 else "ok")
+        st.markdown(
+            f'<div class="ctx-indicator"><span class="ctx-label">'
+            f'{total_tokens:,} / {context_limit:,} toks</span> {pill(f"{pct}%", tone)}</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown('<div style="border-top: 1px solid rgba(128,128,128,0.12); margin: 4px 0 16px 0;"></div>',
+                unsafe_allow_html=True)
+
+    # ── Message History ──────────────────────────────────────
     for msg in messages:
         role = msg.get("role")
         content = msg.get("content", "")

@@ -51,7 +51,7 @@ _ensure_backend_started()
 from ui.api_client import api
 from ui.components import apply_theme, persist_theme_across_pages, pill
 from rag.feature_flags import get_active_flags
-from rag.storage.chat_store import list_chats, load_chat, delete_chat, create_new_chat
+from rag.storage.chat_store import list_chats, load_chat, delete_chat, create_new_chat, save_chat
 
 st.set_page_config(
     page_title="DocChat Pro · Enterprise RAG",
@@ -81,6 +81,13 @@ def _backend_online() -> bool:
 
 # ── Route: Unauthenticated Users ─────────────────────────────
 if not st.session_state.get("authenticated", False):
+    # Hide sidebar completely for unauthenticated users
+    st.markdown("""
+        <style>
+        [data-testid="stSidebar"] { display: none !important; }
+        [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+        </style>
+    """, unsafe_allow_html=True)
     PAGES = {
         "Authentication": [
             st.Page("views/login_page.py", title="Sign In", icon="🔐", url_path="login", default=True),
@@ -140,92 +147,186 @@ if is_admin:
         PAGES["Legacy / Dev Tools"] = legacy_pages
 
 
-# ── Render Custom Sidebar Elements ───────────────────────────
+# ── Global Sidebar CSS: Professional ChatGPT-like appearance ─
 with st.sidebar:
     st.markdown(
         """
         <style>
-        /* ChatGPT-style unified single-row Recents list */
-        div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
-            align-items: center !important;
-            gap: 2px !important;
-            margin-bottom: 2px !important;
-            border-radius: 8px !important;
-            padding: 1px 2px !important;
+        /* ─── SIDEBAR GLOBAL ─────────────────────────────── */
+        section[data-testid="stSidebar"] {
+            background: var(--secondary-background-color, #f7f7f8) !important;
         }
-        div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:hover {
-            background-color: rgba(128, 128, 128, 0.08) !important;
+        section[data-testid="stSidebar"] > div:first-child {
+            padding-top: 1rem !important;
         }
 
-        /* Borderless chat title button */
-        div[data-testid="stSidebar"] button[kind="secondary"] {
+        /* ─── HIDE "Workspace" nav group label ───────────── */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] > ul > li > div > span {
+            font-size: 0.7rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.06em !important;
+            color: #94a3b8 !important;
+            font-weight: 600 !important;
+        }
+
+        /* ─── Nav links styling ──────────────────────────── */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] a {
+            font-size: 0.88rem !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] a:hover {
+            background: rgba(128, 128, 128, 0.08) !important;
+        }
+
+        /* ─── ALL sidebar buttons: strip borders ────────── */
+        section[data-testid="stSidebar"] button[kind="secondary"],
+        section[data-testid="stSidebar"] button[kind="tertiary"] {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
+        }
+
+        /* ─── Recents row: flat, single-line ─────────────── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
+            align-items: center !important;
+            gap: 0px !important;
+            margin-bottom: 1px !important;
+            padding: 0 !important;
+        }
+
+        /* ─── Chat title buttons ─────────────────────────── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[kind="secondary"] {
             text-align: left !important;
             justify-content: flex-start !important;
-            padding: 6px 8px !important;
-            font-size: 0.88rem !important;
+            padding: 7px 10px !important;
+            font-size: 0.85rem !important;
             font-weight: 400 !important;
-            border-radius: 6px !important;
+            border-radius: 8px !important;
             color: inherit !important;
-            line-height: 1.2 !important;
+            line-height: 1.3 !important;
+            min-height: unset !important;
+            height: auto !important;
         }
-        div[data-testid="stSidebar"] button[kind="secondary"]:hover {
-            background: transparent !important;
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:hover {
+            background-color: rgba(128, 128, 128, 0.07) !important;
+            border-radius: 8px !important;
         }
 
-        /* Borderless 3-dots popover button */
-        div[data-testid="stSidebar"] div[data-testid="stPopover"] button {
+        /* ─── Popover trigger (⋯ button) ────────────────── */
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
-            padding: 3px 6px !important;
-            color: #94a3b8 !important;
-            font-size: 1.15rem !important;
+            padding: 2px 6px !important;
+            color: transparent !important;
+            font-size: 1.1rem !important;
             font-weight: 700 !important;
             border-radius: 6px !important;
             min-height: unset !important;
             height: auto !important;
             width: auto !important;
+            min-width: unset !important;
+            transition: color 0.15s ease !important;
         }
-        div[data-testid="stSidebar"] div[data-testid="stPopover"] button:hover {
+        /* Show dots only on row hover */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:hover div[data-testid="stPopover"] > div:first-child > button {
+            color: #64748b !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button:hover {
             color: inherit !important;
-            background-color: rgba(128, 128, 128, 0.16) !important;
+            background-color: rgba(128, 128, 128, 0.12) !important;
         }
 
-        /* Hide the dropdown chevron SVG so it only shows the 3 dots */
-        div[data-testid="stSidebar"] div[data-testid="stPopover"] button svg {
+        /* ─── HIDE the dropdown chevron SVG inside popover button ── */
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button > div,
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button svg,
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button > div > svg {
             display: none !important;
+        }
+
+        /* ─── New Chat primary button ────────────────────── */
+        section[data-testid="stSidebar"] button[kind="primary"] {
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            font-size: 0.88rem !important;
+            padding: 8px 16px !important;
+        }
+
+        /* ─── Profile container ──────────────────────────── */
+        section[data-testid="stSidebar"] div[data-testid="stVerticalBlockBorderWrapper"]:last-of-type {
+            border: 1px solid rgba(128, 128, 128, 0.12) !important;
+            border-radius: 10px !important;
+            background: var(--background-color, #fff) !important;
+        }
+
+        /* ─── Popover content panel ──────────────────────── */
+        div[data-testid="stPopoverBody"] {
+            padding: 4px !important;
+            min-width: 140px !important;
+        }
+        div[data-testid="stPopoverBody"] button {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            padding: 8px 12px !important;
+            font-size: 0.85rem !important;
+            border-radius: 6px !important;
+            width: 100% !important;
+        }
+        div[data-testid="stPopoverBody"] button:hover {
+            background: rgba(128, 128, 128, 0.08) !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("### 🤖 DocChat Pro")
-    st.caption("Enterprise RAG & Policy Intelligence")
+    # ── Brand ────────────────────────────────────────────────
+    st.markdown(
+        """
+        <div style="padding: 4px 0 12px 0;">
+            <div style="font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em;">
+                🤖 DocChat Pro
+            </div>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+                Enterprise RAG & Policy Intelligence
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # + New Chat Action
-    if st.button("➕ New Chat", use_container_width=True, type="primary"):
+    # + New Chat
+    if st.button("＋  New Chat", use_container_width=True, type="primary"):
         new_id = create_new_chat(username, "New Conversation")
         st.session_state["current_chat_id"] = new_id
         st.session_state["messages"] = []
         st.session_state["current_chat_title"] = "New Conversation"
         st.rerun()
 
-    # Recents History
-    st.markdown("##### 🕒 Recents")
+    # ── Recents ──────────────────────────────────────────────
+    st.markdown(
+        '<div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; '
+        'color: #94a3b8; font-weight: 600; margin: 16px 0 6px 4px;">Recents</div>',
+        unsafe_allow_html=True,
+    )
+
     past_chats = list_chats(username)
     if past_chats:
-        for c in past_chats[:8]:
+        for c in past_chats[:10]:
             cid = c.get("chat_id")
             ctitle = c.get("title", "Conversation")
-            c_col, d_col = st.columns([5.2, 0.8])
+            is_active = st.session_state.get("current_chat_id") == cid
+
+            c_col, d_col = st.columns([6, 1])
             with c_col:
-                is_active = (st.session_state.get("current_chat_id") == cid)
-                btn_label = f"💬  {ctitle}" if not is_active else f"▸  {ctitle}"
-                if st.button(btn_label[:26], key=f"chat_sel_{cid}", use_container_width=True):
+                label = ctitle[:28]
+                if is_active:
+                    label = f"▸ {label}"
+                if st.button(label, key=f"cs_{cid}", use_container_width=True):
                     saved_chat = load_chat(username, cid)
                     if saved_chat:
                         st.session_state["current_chat_id"] = cid
@@ -233,62 +334,90 @@ with st.sidebar:
                         st.session_state["current_chat_title"] = saved_chat.get("title", "Conversation")
                         st.rerun()
             with d_col:
-                with st.popover("⋯", help="Options"):
-                    st.caption(f"**{ctitle[:25]}**")
-                    new_title = st.text_input("Rename", value=ctitle, key=f"ren_input_{cid}")
-                    if st.button("✏️ Rename", key=f"save_ren_{cid}", use_container_width=True):
-                        if new_title.strip():
-                            saved = load_chat(username, cid)
-                            msgs = saved.get("messages", []) if saved else []
-                            save_chat(username, cid, new_title.strip(), msgs)
-                            if st.session_state.get("current_chat_id") == cid:
-                                st.session_state["current_chat_title"] = new_title.strip()
-                            st.rerun()
-
-                    st.markdown("<div style='margin: 8px 0;'></div>", unsafe_allow_html=True)
-                    if st.button("🗑️ Delete Chat", key=f"del_c_{cid}", type="primary", use_container_width=True):
+                with st.popover("⋯"):
+                    if st.button("✏️ Rename", key=f"ren_{cid}", use_container_width=True):
+                        st.session_state[f"renaming_{cid}"] = True
+                    if st.button("🗑️ Delete", key=f"del_{cid}", use_container_width=True):
                         delete_chat(username, cid)
                         if st.session_state.get("current_chat_id") == cid:
                             st.session_state["current_chat_id"] = None
                             st.session_state["messages"] = []
                             st.session_state["current_chat_title"] = ""
                         st.rerun()
+
+            # Inline rename field (appears below the row when triggered)
+            if st.session_state.get(f"renaming_{cid}", False):
+                new_title = st.text_input(
+                    "New title", value=ctitle, key=f"ren_input_{cid}",
+                    label_visibility="collapsed",
+                )
+                r1, r2 = st.columns(2)
+                with r1:
+                    if st.button("Save", key=f"save_ren_{cid}", use_container_width=True, type="primary"):
+                        if new_title.strip():
+                            saved = load_chat(username, cid)
+                            msgs = saved.get("messages", []) if saved else []
+                            save_chat(username, cid, new_title.strip(), msgs)
+                            if st.session_state.get("current_chat_id") == cid:
+                                st.session_state["current_chat_title"] = new_title.strip()
+                            st.session_state[f"renaming_{cid}"] = False
+                            st.rerun()
+                with r2:
+                    if st.button("Cancel", key=f"cancel_ren_{cid}", use_container_width=True):
+                        st.session_state[f"renaming_{cid}"] = False
+                        st.rerun()
     else:
-        st.caption("No saved conversations yet.")
+        st.markdown(
+            '<div style="font-size: 0.82rem; color: #94a3b8; padding: 4px 0 0 4px;">No conversations yet</div>',
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("---")
+    # ── Spacer pushes profile to bottom ──────────────────────
+    st.markdown('<div style="flex: 1; min-height: 30px;"></div>', unsafe_allow_html=True)
 
-    # Backend status badge
+    # ── Backend status ───────────────────────────────────────
     online = _backend_online()
-    st.markdown(pill("Backend online", "ok") if online else pill("Backend offline", "bad"), unsafe_allow_html=True)
+    status_color = "#22c55e" if online else "#ef4444"
+    status_text = "Online" if online else "Offline"
+    st.markdown(
+        f'<div style="display: flex; align-items: center; gap: 6px; padding: 4px 4px 8px 4px;">'
+        f'<div style="width: 7px; height: 7px; border-radius: 50%; background: {status_color};"></div>'
+        f'<span style="font-size: 0.78rem; color: #94a3b8;">Backend {status_text}</span></div>',
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
-
-    # User Profile Pill & Sign Out
+    # ── User Profile & Sign Out ──────────────────────────────
     with st.container(border=True):
-        u_col1, u_col2 = st.columns([3, 1])
-        with u_col1:
+        p_col1, p_col2 = st.columns([4, 1])
+        with p_col1:
+            avatar_color = current_user.get("avatar_color", "#6366f1")
+            initials = current_user.get("avatar_initials", "U")
+            display_name = current_user.get("display_name", "User")
+            role = current_user.get("role", "user")
             st.markdown(
                 f"""
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="background: {current_user.get('avatar_color', '#6366f1')}; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem;">
-                        {current_user.get('avatar_initials', 'U')}
-                    </div>
+                <div style="display: flex; align-items: center; gap: 10px; padding: 2px 0;">
+                    <div style="background: {avatar_color}; color: white; border-radius: 50%;
+                         width: 32px; height: 32px; display: flex; align-items: center;
+                         justify-content: center; font-weight: 600; font-size: 0.8rem;
+                         flex-shrink: 0;">{initials}</div>
                     <div>
-                        <div style="font-weight: 600; font-size: 0.85rem; line-height: 1.1;">{current_user.get('display_name', 'User')}</div>
-                        <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">{current_user.get('role', 'user')}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; line-height: 1.2;">{display_name}</div>
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;
+                             letter-spacing: 0.04em;">{role}</div>
                     </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
-        with u_col2:
-            if st.button("🚪", help="Sign Out", key="sign_out_btn"):
-                st.session_state["authenticated"] = False
-                st.session_state["user"] = None
-                st.session_state["current_chat_id"] = None
-                st.session_state["messages"] = []
-                st.rerun()
+        with p_col2:
+            with st.popover("⋯"):
+                if st.button("🚪 Sign Out", key="sign_out_btn", use_container_width=True):
+                    st.session_state["authenticated"] = False
+                    st.session_state["user"] = None
+                    st.session_state["current_chat_id"] = None
+                    st.session_state["messages"] = []
+                    st.rerun()
 
 
 navigation = st.navigation(PAGES, expanded=True)
