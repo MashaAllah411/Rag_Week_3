@@ -72,36 +72,83 @@ def render_chat_interface():
             color: white !important;
         }
 
-        /* Hero input bar */
+        /* Hero input bar — seamless pill capsule matching ChatGPT */
         div[data-testid="stForm"] {
-            border-radius: 28px !important;
+            border-radius: 36px !important;
             border: 1px solid rgba(128, 128, 128, 0.22) !important;
-            box-shadow: 0 2px 18px rgba(0, 0, 0, 0.05) !important;
-            padding: 3px 8px !important;
+            box-shadow: 0 3px 20px -2px rgba(0, 0, 0, 0.06) !important;
+            padding: 4px 12px !important;
             background: var(--secondary-background-color, #ffffff) !important;
             max-width: 680px !important;
             margin: 0 auto !important;
+        }
+        /* Completely remove inner border, outline, and background from text input and all wrapper containers */
+        div[data-testid="stForm"] div[data-testid="stTextInput"],
+        div[data-testid="stForm"] div[data-testid="stTextInput"] > div,
+        div[data-testid="stForm"] div[data-testid="stTextInput"] [data-baseweb="input"],
+        div[data-testid="stForm"] div[data-testid="stTextInput"] [data-baseweb="base-input"],
+        div[data-testid="stForm"] div[data-testid="stTextInputRootElement"] {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
         }
         div[data-testid="stForm"] div[data-testid="stTextInput"] input {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
-            font-size: 0.95rem !important;
-            padding: 8px 4px !important;
+            outline: none !important;
+            font-size: 0.98rem !important;
+            padding: 8px 6px !important;
+            color: inherit !important;
         }
         div[data-testid="stForm"] div[data-testid="stTextInput"] input:focus {
+            border: none !important;
             box-shadow: none !important;
+            outline: none !important;
         }
+        /* Hide the "Press Enter to submit form" hint */
+        div[data-testid="stForm"] [data-testid="InputInstructions"],
+        div[data-testid="stForm"] div[data-testid="stInputInstructions"],
+        div[data-testid="stForm"] small {
+            display: none !important;
+        }
+        /* Circular submit button */
         div[data-testid="stForm"] button[kind="primaryFormSubmit"] {
             border-radius: 50% !important;
-            width: 34px !important;
-            height: 34px !important;
-            min-height: 34px !important;
+            width: 36px !important;
+            height: 36px !important;
+            min-height: 36px !important;
             padding: 0 !important;
-            font-size: 1.1rem !important;
+            font-size: 1.15rem !important;
             background-color: #2563eb !important;
             color: white !important;
             border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        /* Suggestion rows */
+        .suggestion-box button[kind="tertiary"] {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            padding: 9px 12px !important;
+            font-size: 0.88rem !important;
+            font-weight: 400 !important;
+            border-radius: 10px !important;
+            color: #64748b !important;
+            transition: all 0.15s ease !important;
+        }
+        .suggestion-box button[kind="tertiary"]:hover {
+            background: rgba(128, 128, 128, 0.08) !important;
+            color: inherit !important;
         }
 
         /* Centered chat messages */
@@ -131,36 +178,52 @@ def render_chat_interface():
             unsafe_allow_html=True,
         )
 
-        # Hero input bar
-        _, center_col, _ = st.columns([1.2, 4, 1.2])
+        # Hero input bar matching ChatGPT reference layout
+        _, center_col, _ = st.columns([1, 4.6, 1])
         with center_col:
             with st.form("hero_chat_form", clear_on_submit=True):
-                col_input, col_btn = st.columns([8, 1])
-                with col_input:
+                c_plus, c_input, c_think, c_mic, c_btn = st.columns(
+                    [0.45, 6.2, 1.25, 0.55, 0.65],
+                    vertical_alignment="center",
+                )
+                with c_plus:
+                    st.markdown(
+                        "<div style='font-size: 1.3rem; text-align: center; color: #64748b; font-weight: 300; cursor: pointer; line-height: 1;'>＋</div>",
+                        unsafe_allow_html=True,
+                    )
+                with c_input:
                     hero_query = st.text_input(
                         "Ask DocChat Pro...",
                         label_visibility="collapsed",
-                        placeholder="Ask anything about your documents...",
+                        placeholder="Ask DocChat Pro...",
                     )
-                with col_btn:
+                with c_think:
+                    st.markdown(
+                        "<div style='font-size: 0.82rem; color: #64748b; font-weight: 500; text-align: center; white-space: nowrap;'>🧠 Think</div>",
+                        unsafe_allow_html=True,
+                    )
+                with c_mic:
+                    st.markdown(
+                        "<div style='font-size: 1.05rem; text-align: center; color: #64748b; line-height: 1;'>🎙️</div>",
+                        unsafe_allow_html=True,
+                    )
+                with c_btn:
                     hero_submit = st.form_submit_button("↑", type="primary")
 
                 if hero_submit and hero_query.strip():
                     st.session_state["pending_prompt"] = hero_query.strip()
                     st.rerun()
 
-        # Suggestion rows
-        st.markdown('<div style="height: 16px;"></div>', unsafe_allow_html=True)
+            st.markdown('<div style="height: 14px;"></div>', unsafe_allow_html=True)
 
-        suggestions = [
-            ("📄", "What is the schedule of depreciation for fixing IDV?"),
-            ("🏖️", "What is my annual leave entitlement under the policy?"),
-            ("🛡️", "What are the exclusions under Section 1 Own Damage?"),
-            ("📋", "How do I escalate a discretionary approval to an HRBP?"),
-        ]
+            suggestions = [
+                ("📄", "What is the schedule of depreciation for fixing IDV?"),
+                ("🏖️", "What is my annual leave entitlement under the policy?"),
+                ("🛡️", "What are the exclusions under Section 1 Own Damage?"),
+                ("📋", "How do I escalate a discretionary approval to an HRBP?"),
+            ]
 
-        _, sug_col, _ = st.columns([1.2, 4, 1.2])
-        with sug_col:
+            st.markdown('<div class="suggestion-box">', unsafe_allow_html=True)
             for icon, text in suggestions:
                 if st.button(
                     f"{icon}  {text}",
@@ -170,6 +233,7 @@ def render_chat_interface():
                 ):
                     st.session_state["pending_prompt"] = text
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
         return  # On landing with no messages, return after showing hero UI
 
