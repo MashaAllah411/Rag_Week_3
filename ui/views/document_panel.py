@@ -65,12 +65,14 @@ def render_document_panel():
     for doc in docs:
         fname = doc.get("filename", "Unknown")
         chunks = doc.get("chunks", 0)
-        size_kb = doc.get("size_bytes", 0) // 1024
+        pages = doc.get("pages", 0)
+        size_kb = doc.get("size_kb") or round(doc.get("size_bytes", 0) / 1024, 1)
+
         with st.container(border=True):
             c_info, c_preview, c_del = st.columns([3, 1, 1])
             with c_info:
                 st.markdown(f"**📄 {fname}**")
-                st.caption(f"{chunks} chunks · {size_kb} KB")
+                st.caption(f"{chunks} chunks · {pages} pages · {size_kb} KB")
             with c_preview:
                 if st.button("🔍 Preview", key=f"prev_{fname}"):
                     st.session_state[f"preview_{fname}"] = not st.session_state.get(f"preview_{fname}", False)
@@ -87,10 +89,21 @@ def render_document_panel():
             if st.session_state.get(f"preview_{fname}", False):
                 with st.spinner("Loading chunk preview..."):
                     ok_chk, chk_res = call(api.inspect_document_chunks, fname)
-                    if ok_chk and chk_res.get("chunks"):
-                        st.markdown("**First Chunks Preview:**")
-                        for idx, chunk in enumerate(chk_res["chunks"][:3]):
-                            st.text_area(f"Chunk #{idx+1}", chunk.get("text", "")[:350] + "...", height=90, disabled=True)
+                    sample_chunks = chk_res.get("sample_chunks") or chk_res.get("chunks", []) if (ok_chk and chk_res) else []
+                    total_chunks = chk_res.get("total_chunks", len(sample_chunks)) if (ok_chk and chk_res) else chunks
+
+                    if sample_chunks:
+                        st.markdown(f"**First Chunks Preview (Total indexed: {total_chunks} chunks):**")
+                        for idx, chunk in enumerate(sample_chunks[:4]):
+                            c_text = chunk.get("preview") or chunk.get("text", "")
+                            c_len = chunk.get("length", len(c_text))
+                            st.text_area(
+                                f"Chunk #{idx+1} ({c_len} characters)",
+                                c_text,
+                                height=110,
+                                key=f"txt_{fname}_{idx}",
+                                disabled=True,
+                            )
                     else:
                         st.caption("No chunk text preview available.")
 

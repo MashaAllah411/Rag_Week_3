@@ -63,6 +63,20 @@ async def list_documents():
 
     if os.path.isdir(_RESOURCES_DIR):
         pdf_files = [f for f in os.listdir(_RESOURCES_DIR) if f.lower().endswith(".pdf")]
+        
+        # Pre-query chunk counts from ChromaDB if available
+        chroma_counts: Dict[str, int] = {}
+        try:
+            from rag.storage.vectorstore import get_vector_store
+            col = get_vector_store()._collection()
+            all_records = col.get(include=["metadatas"])
+            for meta in all_records.get("metadatas", []):
+                doc_name = meta.get("document_name")
+                if doc_name:
+                    chroma_counts[doc_name] = chroma_counts.get(doc_name, 0) + 1
+        except Exception as e:
+            logger.debug(f"Could not fetch chunk counts from ChromaDB: {e}")
+
         for fname in pdf_files:
             fpath = os.path.join(_RESOURCES_DIR, fname)
             size_kb = round(os.path.getsize(fpath) / 1024, 1)
@@ -75,6 +89,7 @@ async def list_documents():
 
             display_title = _format_display_title(fname)
             questions = _get_suggested_questions(fname)
+            chunk_count = chroma_counts.get(fname, num_pages * 3 if num_pages else 0)
 
             doc_info = {
                 "filename": fname,
@@ -83,6 +98,7 @@ async def list_documents():
                 "path": fpath,
                 "size_kb": size_kb,
                 "pages": num_pages,
+                "chunks": chunk_count,
                 "status": "indexed",
                 "vector_index": VECTOR_STORE_COLLECTION,
                 "embedding_model": EMBEDDING_MODEL,
