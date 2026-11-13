@@ -17,6 +17,7 @@ dependencies = [
     "chromadb",
     "rank-bm25",
     "ollama",
+    "groq",
     "python-dotenv",
     "numpy",
     "pandas",

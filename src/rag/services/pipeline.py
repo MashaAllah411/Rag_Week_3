@@ -257,7 +257,9 @@ def run_pipeline(
     logger.info(f"[PIPELINE] Confidence: {confidence}")
 
     # ── Step 4: LLM Grounded Answer ──────────────────────────
-    s_llm = rt.start_span("generation:llm", attributes={"model": "llama3.2"})
+    from rag.config import LLM_PROVIDER, GROQ_MODEL, OLLAMA_MODEL
+    _active_model = GROQ_MODEL if LLM_PROVIDER.lower() == "groq" else OLLAMA_MODEL
+    s_llm = rt.start_span("generation:llm", attributes={"model": f"{LLM_PROVIDER}:{_active_model}"})
     if not raw_chunks or confidence == "unknown":
         answer = _IDK_RESPONSE
         pipeline_steps.append("No chunks retrieved → returning I-don't-know response")
@@ -266,9 +268,7 @@ def run_pipeline(
             llm_fn = _get_llm()
             context = "\n\n---\n\n".join(c["text"] for c in raw_chunks)
             answer = llm_fn(question, context)
-            from rag.config import LLM_PROVIDER, GROQ_MODEL, OLLAMA_MODEL
-        _active_model = GROQ_MODEL if LLM_PROVIDER.lower() == "groq" else OLLAMA_MODEL
-        pipeline_steps.append(f"LLM grounded answer generated ({LLM_PROVIDER.upper()}: {_active_model})")
+            pipeline_steps.append(f"LLM grounded answer generated ({LLM_PROVIDER.upper()}: {_active_model})")
             logger.info("[PIPELINE] LLM answer generated.")
         except Exception as e:
             logger.error(f"[PIPELINE] LLM call failed: {e}")

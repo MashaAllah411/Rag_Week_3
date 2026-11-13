@@ -8,6 +8,7 @@ sentence-transformers
 chromadb
 rank-bm25
 ollama
+groq>=0.9.0
 python-dotenv
 numpy
 pandas
@@ -23,5 +24,3 @@ opentelemetry-exporter-otlp-proto-http
 # Dev / test
 pytest
 reportlab
-
-groq>=0.9.0
