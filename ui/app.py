@@ -218,8 +218,8 @@ with st.sidebar:
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
-            padding: 2px 6px !important;
-            color: transparent !important;
+            padding: 4px 8px !important;
+            color: #94a3b8 !important;
             font-size: 1.1rem !important;
             font-weight: 700 !important;
             border-radius: 6px !important;
@@ -227,21 +227,14 @@ with st.sidebar:
             height: auto !important;
             width: auto !important;
             min-width: unset !important;
-            transition: color 0.15s ease !important;
-        }
-        /* Show dots only on row hover */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:hover div[data-testid="stPopover"] > div:first-child > button {
-            color: #64748b !important;
         }
         section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button:hover {
             color: inherit !important;
             background-color: rgba(128, 128, 128, 0.12) !important;
         }
 
-        /* ─── HIDE the dropdown chevron SVG inside popover button ── */
-        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button > div,
-        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button svg,
-        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button > div > svg {
+        /* ─── HIDE only the dropdown chevron SVG, keep the ⋯ text ── */
+        section[data-testid="stSidebar"] div[data-testid="stPopover"] > div:first-child > button svg {
             display: none !important;
         }
 

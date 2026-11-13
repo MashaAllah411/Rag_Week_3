@@ -26,17 +26,19 @@ def render_chat_interface():
     username = user.get("username", "demo")
     cfg = get_current_config()
 
-    # Active conversation session
-    if "current_chat_id" not in st.session_state or not st.session_state["current_chat_id"]:
-        st.session_state["current_chat_id"] = create_new_chat(username, "New Conversation")
-        st.session_state["messages"] = []
+    # Active conversation session — do NOT create a new chat on every render.
+    # Only create when the user explicitly sends a message (handled below).
+    chat_id = st.session_state.get("current_chat_id")
 
-    chat_id = st.session_state["current_chat_id"]
-
-    # Load messages if not loaded
-    if "messages" not in st.session_state:
-        saved = load_chat(username, chat_id)
-        st.session_state["messages"] = saved.get("messages", []) if saved else []
+    if chat_id:
+        # Load messages if switching to an existing chat
+        if "messages" not in st.session_state:
+            saved = load_chat(username, chat_id)
+            st.session_state["messages"] = saved.get("messages", []) if saved else []
+    else:
+        # No active chat — show landing page (empty state)
+        if "messages" not in st.session_state:
+            st.session_state["messages"] = []
 
     messages = st.session_state["messages"]
 
@@ -206,40 +208,28 @@ def render_chat_interface():
 
         _, sug_col, _ = st.columns([1.2, 4, 1.2])
         with sug_col:
+            # Render suggestions as styled HTML links that set session state via buttons
             for icon, text in suggestions:
+                st.markdown(
+                    f"""
+                    <style>
+                    button[key="sug_{text[:12]}"] {{
+                        border: none !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                    }}
+                    </style>
+                    """,
+                    unsafe_allow_html=True,
+                )
                 if st.button(
                     f"{icon}  {text}",
                     key=f"sug_{text[:12]}",
                     use_container_width=True,
+                    type="tertiary",
                 ):
                     st.session_state["pending_prompt"] = text
                     st.rerun()
-
-        # Style suggestion buttons to look like flat rows
-        st.markdown(
-            """
-            <style>
-            /* Target suggestion buttons specifically */
-            div[data-testid="stVerticalBlock"] button[kind="secondary"] {
-                border: none !important;
-                background: transparent !important;
-                box-shadow: none !important;
-                text-align: left !important;
-                justify-content: flex-start !important;
-                padding: 10px 14px !important;
-                font-size: 0.88rem !important;
-                font-weight: 400 !important;
-                border-radius: 10px !important;
-                color: #64748b !important;
-            }
-            div[data-testid="stVerticalBlock"] button[kind="secondary"]:hover {
-                background: rgba(128, 128, 128, 0.06) !important;
-                color: inherit !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
 
         return  # Don't render chat input or history on landing
 
@@ -294,6 +284,12 @@ def render_chat_interface():
     user_input = st.chat_input("Ask anything about your documents...") or pending
 
     if user_input:
+        # Create chat on first message (lazy creation — no empty chats)
+        if not chat_id:
+            chat_id = create_new_chat(username, user_input[:40])
+            st.session_state["current_chat_id"] = chat_id
+            st.session_state["current_chat_title"] = user_input[:40]
+
         # Display user message immediately
         messages.append({"role": "user", "content": user_input, "timestamp": time.time()})
         with st.chat_message("user", avatar="🧑‍💻"):
