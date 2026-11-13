@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional, Literal
 # ── Q&A & Ingestion ──────────────────────────────────────────
 
 class AskRequest(BaseModel):
-    question: str = Field(..., min_length=3, description="The question to ask against the policy")
+    question: str = Field(..., min_length=1, description="The question to ask against the policy")
     mode: Literal["semantic", "hybrid", "reranked"] = Field(
         default="hybrid",
         description="Retrieval mode: semantic (ChromaDB only), hybrid (BM25+RRF), reranked (hybrid + cross-encoder + MMR)"
