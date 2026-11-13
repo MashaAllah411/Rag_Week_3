@@ -142,6 +142,67 @@ if is_admin:
 
 # ── Render Custom Sidebar Elements ───────────────────────────
 with st.sidebar:
+    st.markdown(
+        """
+        <style>
+        /* ChatGPT-style unified single-row Recents list */
+        div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] {
+            align-items: center !important;
+            gap: 2px !important;
+            margin-bottom: 2px !important;
+            border-radius: 8px !important;
+            padding: 1px 2px !important;
+        }
+        div[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:hover {
+            background-color: rgba(128, 128, 128, 0.08) !important;
+        }
+
+        /* Borderless chat title button */
+        div[data-testid="stSidebar"] button[kind="secondary"] {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            padding: 6px 8px !important;
+            font-size: 0.88rem !important;
+            font-weight: 400 !important;
+            border-radius: 6px !important;
+            color: inherit !important;
+            line-height: 1.2 !important;
+        }
+        div[data-testid="stSidebar"] button[kind="secondary"]:hover {
+            background: transparent !important;
+        }
+
+        /* Borderless 3-dots popover button */
+        div[data-testid="stSidebar"] div[data-testid="stPopover"] button {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 3px 6px !important;
+            color: #94a3b8 !important;
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            border-radius: 6px !important;
+            min-height: unset !important;
+            height: auto !important;
+            width: auto !important;
+        }
+        div[data-testid="stSidebar"] div[data-testid="stPopover"] button:hover {
+            color: inherit !important;
+            background-color: rgba(128, 128, 128, 0.16) !important;
+        }
+
+        /* Hide the dropdown chevron SVG so it only shows the 3 dots */
+        div[data-testid="stSidebar"] div[data-testid="stPopover"] button svg {
+            display: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown("### 🤖 DocChat Pro")
     st.caption("Enterprise RAG & Policy Intelligence")
 
@@ -160,10 +221,10 @@ with st.sidebar:
         for c in past_chats[:8]:
             cid = c.get("chat_id")
             ctitle = c.get("title", "Conversation")
-            c_col, d_col = st.columns([4.8, 1.2])
+            c_col, d_col = st.columns([5.2, 0.8])
             with c_col:
                 is_active = (st.session_state.get("current_chat_id") == cid)
-                btn_label = f"▸ {ctitle}" if is_active else ctitle
+                btn_label = f"💬  {ctitle}" if not is_active else f"▸  {ctitle}"
                 if st.button(btn_label[:26], key=f"chat_sel_{cid}", use_container_width=True):
                     saved_chat = load_chat(username, cid)
                     if saved_chat:
@@ -172,8 +233,8 @@ with st.sidebar:
                         st.session_state["current_chat_title"] = saved_chat.get("title", "Conversation")
                         st.rerun()
             with d_col:
-                with st.popover("⋯", help="Chat options"):
-                    st.caption(f"Chat: {ctitle[:25]}...")
+                with st.popover("⋯", help="Options"):
+                    st.caption(f"**{ctitle[:25]}**")
                     new_title = st.text_input("Rename", value=ctitle, key=f"ren_input_{cid}")
                     if st.button("✏️ Rename", key=f"save_ren_{cid}", use_container_width=True):
                         if new_title.strip():
