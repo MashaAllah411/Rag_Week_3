@@ -26,23 +26,31 @@ def render_chat_interface():
     username = user.get("username", "demo")
     cfg = get_current_config()
 
-    # Active conversation session — do NOT create a new chat on every render.
-    # Only create when the user explicitly sends a message (handled below).
     chat_id = st.session_state.get("current_chat_id")
 
     if chat_id:
-        # Load messages if switching to an existing chat
         if "messages" not in st.session_state:
             saved = load_chat(username, chat_id)
             st.session_state["messages"] = saved.get("messages", []) if saved else []
     else:
-        # No active chat — show landing page (empty state)
         if "messages" not in st.session_state:
             st.session_state["messages"] = []
 
     messages = st.session_state["messages"]
 
-    # ── Global ChatGPT-style input styling ───────────────────
+    # ── If there was a pending prompt submitted from the hero bar or suggestion pills ──
+    pending = st.session_state.pop("pending_prompt", None)
+    if pending:
+        if not chat_id:
+            chat_id = create_new_chat(username, pending[:40])
+            st.session_state["current_chat_id"] = chat_id
+            st.session_state["current_chat_title"] = pending[:40]
+
+        messages.append({"role": "user", "content": pending, "timestamp": time.time()})
+        save_chat(username, chat_id, st.session_state.get("current_chat_title", pending[:40]), messages)
+        st.session_state["messages"] = messages
+
+    # ── Global Styling ───────────────────────────────────────
     st.markdown(
         """
         <style>
@@ -64,16 +72,13 @@ def render_chat_interface():
             background-color: #2563eb !important;
             color: white !important;
         }
-        [data-testid="stChatInputSubmitButton"]:hover {
-            background-color: #1d4ed8 !important;
-        }
 
-        /* Hero form styling for landing page */
+        /* Hero input bar */
         div[data-testid="stForm"] {
             border-radius: 28px !important;
-            border: 1px solid rgba(128, 128, 128, 0.18) !important;
-            box-shadow: 0 2px 20px -2px rgba(0, 0, 0, 0.06) !important;
-            padding: 2px 8px !important;
+            border: 1px solid rgba(128, 128, 128, 0.22) !important;
+            box-shadow: 0 2px 18px rgba(0, 0, 0, 0.05) !important;
+            padding: 3px 8px !important;
             background: var(--secondary-background-color, #ffffff) !important;
             max-width: 680px !important;
             margin: 0 auto !important;
@@ -99,51 +104,11 @@ def render_chat_interface():
             color: white !important;
             border: none !important;
         }
-        div[data-testid="stForm"] button[kind="primaryFormSubmit"]:hover {
-            background-color: #1d4ed8 !important;
-        }
 
-        /* Suggestion rows – clean, borderless */
-        .suggestion-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.15s ease;
-            font-size: 0.9rem;
-            color: inherit;
-            max-width: 680px;
-            margin: 0 auto;
-        }
-        .suggestion-row:hover {
-            background: rgba(128, 128, 128, 0.06);
-        }
-        .suggestion-icon {
-            font-size: 1rem;
-            opacity: 0.5;
-            flex-shrink: 0;
-        }
-        .suggestion-text {
-            opacity: 0.7;
-        }
-
-        /* Chat message styling */
+        /* Centered chat messages */
         [data-testid="stChatMessage"] {
             max-width: 820px !important;
             margin: 0 auto !important;
-        }
-
-        /* Context indicator */
-        .ctx-indicator {
-            text-align: right;
-            padding: 4px 0;
-        }
-        .ctx-label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #94a3b8;
         }
         </style>
         """,
@@ -152,17 +117,6 @@ def render_chat_interface():
 
     # ── Empty State: Greeting & Hero Search Bar ──────────────
     if not messages:
-        # Hide bottom pinned chat input on landing
-        st.markdown(
-            """
-            <style>
-            [data-testid="stChatInput"] { display: none !important; }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Centered greeting
         st.markdown(
             """
             <div style="text-align: center; margin: 10vh auto 28px auto; max-width: 680px;">
@@ -196,7 +150,7 @@ def render_chat_interface():
                     st.session_state["pending_prompt"] = hero_query.strip()
                     st.rerun()
 
-        # Suggestion rows (clean, icon + text, no borders)
+        # Suggestion rows
         st.markdown('<div style="height: 16px;"></div>', unsafe_allow_html=True)
 
         suggestions = [
@@ -208,20 +162,7 @@ def render_chat_interface():
 
         _, sug_col, _ = st.columns([1.2, 4, 1.2])
         with sug_col:
-            # Render suggestions as styled HTML links that set session state via buttons
             for icon, text in suggestions:
-                st.markdown(
-                    f"""
-                    <style>
-                    button[key="sug_{text[:12]}"] {{
-                        border: none !important;
-                        background: transparent !important;
-                        box-shadow: none !important;
-                    }}
-                    </style>
-                    """,
-                    unsafe_allow_html=True,
-                )
                 if st.button(
                     f"{icon}  {text}",
                     key=f"sug_{text[:12]}",
@@ -231,7 +172,7 @@ def render_chat_interface():
                     st.session_state["pending_prompt"] = text
                     st.rerun()
 
-        return  # Don't render chat input or history on landing
+        return  # On landing with no messages, return after showing hero UI
 
     # ── Active Conversation Header ───────────────────────────
     total_tokens = sum(_approx_tokens(m.get("content", "")) for m in messages)
@@ -248,7 +189,8 @@ def render_chat_interface():
     with h_col2:
         tone = "bad" if pct > 85 else ("warn" if pct > 60 else "ok")
         st.markdown(
-            f'<div class="ctx-indicator"><span class="ctx-label">'
+            f'<div style="text-align: right; padding: 4px 0;">'
+            f'<span style="font-size: 0.75rem; color: #94a3b8; font-weight: 500;">'
             f'{total_tokens:,} / {context_limit:,} toks</span> {pill(f"{pct}%", tone)}</div>',
             unsafe_allow_html=True,
         )
@@ -263,7 +205,6 @@ def render_chat_interface():
         with st.chat_message(role, avatar="🧑‍💻" if role == "user" else "🤖"):
             st.markdown(content)
 
-            # Sources / Citations
             sources = msg.get("sources", [])
             if sources:
                 with st.expander(f"📄 Cited Sources ({len(sources)} chunks)", expanded=False):
@@ -273,33 +214,14 @@ def render_chat_interface():
                         st.markdown(f"**Chunk `{cid}`** — Relevance: `{score:.4f}`")
                         st.caption(src.get("text", "")[:400] + "...")
 
-            # Metadata footer
             if role == "assistant" and "latency" in msg:
                 lat = msg.get("latency", 0.0)
                 prov = msg.get("provider", "LLM")
                 st.caption(f"⏱️ {lat:.2f}s · 🧠 {prov} · Mode: {msg.get('mode', 'hybrid')}")
 
-    # ── Chat Input & Action Pipeline ─────────────────────────
-    pending = st.session_state.pop("pending_prompt", None)
-    user_input = st.chat_input("Ask anything about your documents...") or pending
-
-    if user_input:
-        # Create chat on first message (lazy creation — no empty chats)
-        if not chat_id:
-            chat_id = create_new_chat(username, user_input[:40])
-            st.session_state["current_chat_id"] = chat_id
-            st.session_state["current_chat_title"] = user_input[:40]
-
-        # Display user message immediately
-        messages.append({"role": "user", "content": user_input, "timestamp": time.time()})
-        with st.chat_message("user", avatar="🧑‍💻"):
-            st.markdown(user_input)
-
-        # Update chat title if it's the first message
-        if len(messages) == 1:
-            st.session_state["current_chat_title"] = user_input[:40]
-
-        # Assistant generation with thinking steps
+    # ── If last message is from user, generate assistant response ──
+    if messages and messages[-1].get("role") == "user":
+        latest_user_query = messages[-1].get("content", "")
         with st.chat_message("assistant", avatar="🤖"):
             with st.status("Thinking and searching policy corpus...", expanded=True) as status:
                 st.write("🔍 Planning query analysis & checking safety scope...")
@@ -310,7 +232,7 @@ def render_chat_interface():
 
                 ok, resp = call(
                     api.ask,
-                    question=user_input,
+                    question=latest_user_query,
                     mode=cfg.get("search_mode", "hybrid"),
                     top_k=cfg.get("top_k", 5),
                     use_query_rewriter=cfg.get("use_query_rewriter", True),
@@ -352,9 +274,17 @@ def render_chat_interface():
             messages.append(assistant_msg)
 
             # Persist chat
-            title = st.session_state.get("current_chat_title", user_input[:40])
+            title = st.session_state.get("current_chat_title", latest_user_query[:40])
             save_chat(username, chat_id, title, messages)
 
+        st.rerun()
+
+    # ── Continuous Chat Input (bottom bar) ───────────────────
+    user_input = st.chat_input("Ask anything about your documents...")
+    if user_input:
+        messages.append({"role": "user", "content": user_input, "timestamp": time.time()})
+        save_chat(username, chat_id, st.session_state.get("current_chat_title", user_input[:40]), messages)
+        st.session_state["messages"] = messages
         st.rerun()
 
 
