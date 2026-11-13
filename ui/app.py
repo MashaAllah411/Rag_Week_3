@@ -157,14 +157,14 @@ with st.sidebar:
     st.markdown("##### 🕒 Recents")
     past_chats = list_chats(username)
     if past_chats:
-        for c in past_chats[:6]:
+        for c in past_chats[:8]:
             cid = c.get("chat_id")
             ctitle = c.get("title", "Conversation")
-            c_col, d_col = st.columns([5, 1])
+            c_col, d_col = st.columns([4.8, 1.2])
             with c_col:
                 is_active = (st.session_state.get("current_chat_id") == cid)
                 btn_label = f"▸ {ctitle}" if is_active else ctitle
-                if st.button(btn_label[:28], key=f"chat_sel_{cid}", use_container_width=True):
+                if st.button(btn_label[:26], key=f"chat_sel_{cid}", use_container_width=True):
                     saved_chat = load_chat(username, cid)
                     if saved_chat:
                         st.session_state["current_chat_id"] = cid
@@ -172,12 +172,26 @@ with st.sidebar:
                         st.session_state["current_chat_title"] = saved_chat.get("title", "Conversation")
                         st.rerun()
             with d_col:
-                if st.button("×", key=f"del_c_{cid}", help="Delete chat"):
-                    delete_chat(username, cid)
-                    if st.session_state.get("current_chat_id") == cid:
-                        st.session_state["current_chat_id"] = None
-                        st.session_state["messages"] = []
-                    st.rerun()
+                with st.popover("⋯", help="Chat options"):
+                    st.caption(f"Chat: {ctitle[:25]}...")
+                    new_title = st.text_input("Rename", value=ctitle, key=f"ren_input_{cid}")
+                    if st.button("✏️ Rename", key=f"save_ren_{cid}", use_container_width=True):
+                        if new_title.strip():
+                            saved = load_chat(username, cid)
+                            msgs = saved.get("messages", []) if saved else []
+                            save_chat(username, cid, new_title.strip(), msgs)
+                            if st.session_state.get("current_chat_id") == cid:
+                                st.session_state["current_chat_title"] = new_title.strip()
+                            st.rerun()
+
+                    st.markdown("<div style='margin: 8px 0;'></div>", unsafe_allow_html=True)
+                    if st.button("🗑️ Delete Chat", key=f"del_c_{cid}", type="primary", use_container_width=True):
+                        delete_chat(username, cid)
+                        if st.session_state.get("current_chat_id") == cid:
+                            st.session_state["current_chat_id"] = None
+                            st.session_state["messages"] = []
+                            st.session_state["current_chat_title"] = ""
+                        st.rerun()
     else:
         st.caption("No saved conversations yet.")
 
