@@ -12,9 +12,8 @@ Features:
 import time
 import streamlit as st
 from ui.api_client import api
-from ui.components import call, pill
+from ui.components import call, pill, get_current_config
 from rag.storage.chat_store import load_chat, save_chat, create_new_chat
-from ui.views.config_panel import get_current_config
 
 
 def _approx_tokens(text: str) -> int:

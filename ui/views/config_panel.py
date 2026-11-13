@@ -7,21 +7,7 @@ and admin-only advanced settings (feature flags kill-switch, confidence threshol
 import os
 import streamlit as st
 from rag.feature_flags import DEFAULT_FEATURE_FLAGS
-
-
-def get_current_config() -> dict:
-    if "user_config" not in st.session_state:
-        st.session_state["user_config"] = {
-            "search_mode": "hybrid",
-            "top_k": 5,
-            "llm_provider": os.getenv("LLM_PROVIDER", "groq"),
-            "groq_model": os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
-            "confidence_threshold": float(os.getenv("CONFIDENCE_THRESHOLD", "0.45")),
-            "use_query_rewriter": True,
-            "use_reranker": True,
-            "use_cache": True,
-        }
-    return st.session_state["user_config"]
+from ui.components import get_current_config
 
 
 def render_config_panel():

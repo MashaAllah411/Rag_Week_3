@@ -58,6 +58,23 @@ def status_pill(ok: bool, yes: str = "Active", no: str = "Inactive") -> str:
     return pill(yes if ok else no, "ok" if ok else "bad")
 
 
+def get_current_config() -> dict:
+    """Return user configuration dict from session state or initialize with defaults."""
+    import os
+    if "user_config" not in st.session_state:
+        st.session_state["user_config"] = {
+            "search_mode": "hybrid",
+            "top_k": 5,
+            "llm_provider": os.getenv("LLM_PROVIDER", "groq"),
+            "groq_model": os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
+            "confidence_threshold": float(os.getenv("CONFIDENCE_THRESHOLD", "0.45")),
+            "use_query_rewriter": True,
+            "use_reranker": True,
+            "use_cache": True,
+        }
+    return st.session_state["user_config"]
+
+
 def page_header(title: str, icon: str, subtitle: str, weeks: Iterable[str] = (), notice: Optional[str] = None) -> None:
     """Consistent page top: title, purpose, the weeks it covers, and an optional notice."""
     st.title(f"{icon} {title}")
