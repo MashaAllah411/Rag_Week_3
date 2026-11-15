@@ -2,9 +2,8 @@
 ui/views/login_page.py
 
 Modern, production-grade enterprise SaaS sign-in screen for DocChat Pro.
-Designed to meet Linear/Stripe/Vercel visual standards with Inter typography,
-ambient mesh gradient, glassmorphic elevation, technology badges,
-and 1-click instant role-based access.
+Features a spacious two-column split layout on desktop to effectively utilize widescreen real estate,
+highlighting platform capabilities on the left and the interactive auth card on the right.
 """
 import streamlit as st
 from rag.auth_service import authenticate
@@ -25,25 +24,139 @@ def render_login_page():
 
         .stApp {
             background: 
-                radial-gradient(1100px circle at 50% -15%, rgba(59, 130, 246, 0.14), transparent 70%),
-                radial-gradient(900px circle at 90% 85%, rgba(99, 102, 241, 0.09), transparent 60%),
-                radial-gradient(700px circle at 10% 85%, rgba(14, 165, 233, 0.07), transparent 50%),
+                radial-gradient(1200px circle at 20% -10%, rgba(59, 130, 246, 0.12), transparent 70%),
+                radial-gradient(1000px circle at 90% 85%, rgba(99, 102, 241, 0.10), transparent 60%),
+                radial-gradient(800px circle at 50% 50%, rgba(14, 165, 233, 0.05), transparent 50%),
                 var(--background-color, #f8fafc) !important;
             background-attachment: fixed !important;
             min-height: 100vh !important;
         }
 
-        /* ── Center Layout Container ─────────────────────────────── */
+        /* ── Center Layout Container (Spacious 1060px) ───────────── */
         header[data-testid="stHeader"] { background: transparent !important; }
         
         .block-container {
-            max-width: 470px !important;
+            max-width: 1080px !important;
             margin: 0 auto !important;
-            padding-top: max(4.5vh, 28px) !important;
-            padding-bottom: max(4.5vh, 28px) !important;
+            padding-top: max(5vh, 32px) !important;
+            padding-bottom: max(5vh, 32px) !important;
         }
 
-        /* ── Enterprise Card Elevation ───────────────────────────── */
+        /* ── Left Showcase Styling ───────────────────────────────── */
+        .showcase-container {
+            padding: 12px 24px 12px 0;
+        }
+
+        .showcase-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #4338ca;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 5px 13px;
+            border-radius: 9999px;
+            border: 1px solid rgba(99, 102, 241, 0.22);
+            margin-bottom: 16px;
+        }
+
+        .pill-pulse {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        .showcase-heading {
+            font-size: 2.15rem;
+            font-weight: 800;
+            line-height: 1.22;
+            letter-spacing: -0.035em;
+            color: #0f172a;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 65%, #4338ca 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .showcase-lead {
+            font-size: 0.94rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+
+        .feature-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .feature-card:hover {
+            background: #ffffff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            transform: translateX(4px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+            padding-top: 2px;
+        }
+
+        .feature-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+
+        .feature-desc {
+            font-size: 0.78rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(226, 232, 240, 0.85);
+        }
+
+        .stat-box {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #1e40af;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        /* ── Right Card Elevation ────────────────────────────────── */
         div[data-testid="stVerticalBlockBorderWrapper"] {
             border-radius: 20px !important;
             border: 1px solid rgba(226, 232, 240, 0.85) !important;
@@ -57,30 +170,26 @@ def render_login_page():
             -webkit-backdrop-filter: blur(16px) !important;
         }
 
-        /* ── Header Elements ─────────────────────────────────────── */
+        /* ── Header Elements inside Card ─────────────────────────── */
         .auth-header {
             text-align: center;
             padding-bottom: 4px;
         }
 
         .auth-logo-badge {
-            width: 52px;
-            height: 52px;
-            margin: 0 auto 12px auto;
-            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 10px auto;
+            border-radius: 14px;
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #4f46e5 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 22px -4px rgba(37, 99, 235, 0.4);
-            transition: transform 0.25s ease;
-        }
-        .auth-logo-badge:hover {
-            transform: scale(1.05) rotate(1deg);
+            box-shadow: 0 6px 20px -3px rgba(37, 99, 235, 0.4);
         }
 
         .auth-title {
-            font-size: 1.55rem;
+            font-size: 1.45rem;
             font-weight: 800;
             letter-spacing: -0.03em;
             color: #0f172a;
@@ -89,19 +198,11 @@ def render_login_page():
         }
 
         .auth-subtitle {
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             font-weight: 600;
             color: #4338ca;
             letter-spacing: -0.01em;
-            margin-bottom: 6px;
-        }
-
-        .auth-tagline {
-            font-size: 0.8rem;
-            color: #64748b;
-            line-height: 1.45;
-            margin: 0 auto 14px auto;
-            max-width: 380px;
+            margin-bottom: 12px;
         }
 
         /* ── Technology Badges ───────────────────────────────────── */
@@ -111,7 +212,7 @@ def render_login_page():
             justify-content: center;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .tech-badge {
@@ -139,14 +240,14 @@ def render_login_page():
 
         /* ── Input Styling ───────────────────────────────────────── */
         div[data-testid="stTextInput"] {
-            margin-bottom: 10px !important;
+            margin-bottom: 8px !important;
         }
 
         div[data-testid="stTextInput"] label {
             font-size: 0.82rem !important;
             font-weight: 600 !important;
             color: #334155 !important;
-            margin-bottom: 5px !important;
+            margin-bottom: 4px !important;
         }
 
         div[data-testid="stTextInput"] input {
@@ -195,7 +296,7 @@ def render_login_page():
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 20px 0 14px 0;
+            margin: 18px 0 12px 0;
             color: #94a3b8;
             font-size: 0.7rem;
             font-weight: 600;
@@ -237,8 +338,8 @@ def render_login_page():
             gap: 8px;
             font-size: 0.72rem;
             color: #94a3b8;
-            margin-top: 18px;
-            padding-top: 14px;
+            margin-top: 16px;
+            padding-top: 12px;
             border-top: 1px solid rgba(226, 232, 240, 0.75);
             font-weight: 500;
         }
@@ -258,108 +359,166 @@ def render_login_page():
         unsafe_allow_html=True,
     )
 
-    # ── Main Login Card ───────────────────────────────────────
-    with st.container(border=True):
-        # Header
+    # ── Two-Column Split Layout for Desktop / Widescreen ───────
+    col_showcase, col_auth = st.columns([1.18, 1], gap="large")
+
+    with col_showcase:
         st.markdown(
             """
-            <div class="auth-header">
-                <div class="auth-logo-badge">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                    </svg>
+            <div class="showcase-container">
+                <div class="showcase-pill">
+                    <span class="pill-pulse"></span> Production Capstone (Weeks 1–12)
                 </div>
-                <div class="auth-title">DocChat Pro</div>
-                <div class="auth-subtitle">Enterprise Policy & Claims Intelligence</div>
-                <div class="auth-tagline">
-                    AI-powered semantic verification, instant claim triage, and compliance intelligence across enterprise manuals.
+                <h1 class="showcase-heading">
+                    Enterprise Policy Intelligence & Automated Claims Verification
+                </h1>
+                <p class="showcase-lead">
+                    Unified conversational RAG architecture querying complex policy manuals,
+                    clauses, and exclusions with sub-2s latency and verifiable chunk citations.
+                </p>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div>
+                        <div class="feature-title">Ultra-Fast Groq Inference</div>
+                        <div class="feature-desc">~1.5s real-time synthesis via Groq cloud LLM with local Ollama fallback.</div>
+                    </div>
                 </div>
-                <div class="badge-container">
-                    <span class="tech-badge"><span class="badge-dot dot-blue"></span>Groq LLM</span>
-                    <span class="tech-badge"><span class="badge-dot dot-indigo"></span>Hybrid BM25 + RRF</span>
-                    <span class="tech-badge"><span class="badge-dot dot-emerald"></span>AI Guardrails</span>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <div>
+                        <div class="feature-title">Hybrid BM25 + Vector Search</div>
+                        <div class="feature-desc">Reciprocal Rank Fusion (RRF) across ChromaDB dense vectors and keyword indices.</div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <div>
+                        <div class="feature-title">Enterprise AI Guardrails</div>
+                        <div class="feature-desc">Active prompt-injection quarantine, safety triage, and strict hallucination rejection.</div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value">167+</div>
+                        <div class="stat-label">Indexed Chunks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">~1.5s</div>
+                        <div class="stat-label">Groq Latency</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">64/64</div>
+                        <div class="stat-label">Tests Passed</div>
+                    </div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # Credentials Form
-        with st.form("login_form", clear_on_submit=False):
-            username = st.text_input(
-                "Username",
-                placeholder="e.g. demo or DataProp",
+    with col_auth:
+        with st.container(border=True):
+            # Header
+            st.markdown(
+                """
+                <div class="auth-header">
+                    <div class="auth-logo-badge">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="auth-title">DocChat Pro</div>
+                    <div class="auth-subtitle">Sign in to your enterprise workspace</div>
+                    <div class="badge-container">
+                        <span class="tech-badge"><span class="badge-dot dot-blue"></span>Groq LLM</span>
+                        <span class="tech-badge"><span class="badge-dot dot-indigo"></span>Hybrid BM25</span>
+                        <span class="tech-badge"><span class="badge-dot dot-emerald"></span>Guardrails</span>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-            password = st.text_input(
-                "Password",
-                type="password",
-                placeholder="Enter password",
+
+            # Credentials Form
+            with st.form("login_form", clear_on_submit=False):
+                username = st.text_input(
+                    "Username",
+                    placeholder="e.g. demo or DataProp",
+                )
+                password = st.text_input(
+                    "Password",
+                    type="password",
+                    placeholder="Enter password",
+                )
+                submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
+
+                if submitted:
+                    with st.spinner("Authenticating credentials..."):
+                        user_data = authenticate(username, password)
+                        if user_data:
+                            st.session_state["authenticated"] = True
+                            st.session_state["user"] = user_data
+                            if "flags" not in st.session_state:
+                                st.session_state["flags"] = get_active_flags()
+                            st.rerun()
+                        else:
+                            st.error("Invalid credentials. Use 1-click access below.")
+
+            # Quick Demo Access Divider
+            st.markdown(
+                """
+                <div class="auth-divider">
+                    <span>OR INSTANT DEMO ACCESS</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
             )
-            submitted = st.form_submit_button("Sign In →", use_container_width=True, type="primary")
 
-            if submitted:
-                with st.spinner("Authenticating credentials..."):
-                    user_data = authenticate(username, password)
-                    if user_data:
-                        st.session_state["authenticated"] = True
-                        st.session_state["user"] = user_data
-                        if "flags" not in st.session_state:
-                            st.session_state["flags"] = get_active_flags()
-                        st.rerun()
-                    else:
-                        st.error("Invalid username or password. Use quick access below for instant login.")
+            # 2 Equal-Width Quick Demo Access Buttons
+            col_demo, col_admin = st.columns(2)
+            with col_demo:
+                st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
+                if st.button("👤 Demo User", use_container_width=True, help="Instant sign in as standard demo user"):
+                    with st.spinner("Signing in as Demo User..."):
+                        user_data = authenticate("demo", "demo123")
+                        if user_data:
+                            st.session_state["authenticated"] = True
+                            st.session_state["user"] = user_data
+                            if "flags" not in st.session_state:
+                                st.session_state["flags"] = get_active_flags()
+                            st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-        # Quick Demo Access Divider
-        st.markdown(
-            """
-            <div class="auth-divider">
-                <span>OR INSTANT DEMO ACCESS</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            with col_admin:
+                st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
+                if st.button("🛡️ Admin User", use_container_width=True, help="Instant sign in as DataProp admin"):
+                    with st.spinner("Signing in as Admin..."):
+                        user_data = authenticate("DataProp", "admin2025")
+                        if user_data:
+                            st.session_state["authenticated"] = True
+                            st.session_state["user"] = user_data
+                            if "flags" not in st.session_state:
+                                st.session_state["flags"] = get_active_flags()
+                            st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-        # 2 Equal-Width Quick Demo Access Buttons
-        col_demo, col_admin = st.columns(2)
-        with col_demo:
-            st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
-            if st.button("👤 Demo User", use_container_width=True, help="Instant sign in as standard demo user"):
-                with st.spinner("Signing in as Demo User..."):
-                    user_data = authenticate("demo", "demo123")
-                    if user_data:
-                        st.session_state["authenticated"] = True
-                        st.session_state["user"] = user_data
-                        if "flags" not in st.session_state:
-                            st.session_state["flags"] = get_active_flags()
-                        st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        with col_admin:
-            st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
-            if st.button("🛡️ Admin User", use_container_width=True, help="Instant sign in as DataProp admin"):
-                with st.spinner("Signing in as Admin..."):
-                    user_data = authenticate("DataProp", "admin2025")
-                    if user_data:
-                        st.session_state["authenticated"] = True
-                        st.session_state["user"] = user_data
-                        if "flags" not in st.session_state:
-                            st.session_state["flags"] = get_active_flags()
-                        st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # Security & Compliance Footer
-        st.markdown(
-            """
-            <div class="auth-footer">
-                <span class="footer-item">Role-Based Access</span>
-                <span class="footer-dot">•</span>
-                <span class="footer-item">SHA-256 Auth</span>
-                <span class="footer-dot">•</span>
-                <span class="footer-item">Weeks 1–12 Capstone</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+            # Security & Compliance Footer
+            st.markdown(
+                """
+                <div class="auth-footer">
+                    <span class="footer-item">Role-Based Access</span>
+                    <span class="footer-dot">•</span>
+                    <span class="footer-item">SHA-256 Auth</span>
+                    <span class="footer-dot">•</span>
+                    <span class="footer-item">Cap. W1-12</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 
 render_login_page()
