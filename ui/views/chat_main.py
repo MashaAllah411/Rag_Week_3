@@ -53,22 +53,62 @@ def render_chat_interface():
     st.markdown(
         """
         <style>
-        /* Pill-shaped chat input */
+        /* Pill-shaped chat input — identical styling to landing hero bar */
         [data-testid="stChatInput"] {
-            border-radius: 24px !important;
-            border: 1px solid rgba(128, 128, 128, 0.2) !important;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
-            padding: 2px 8px !important;
-            max-width: 820px !important;
+            border-radius: 36px !important;
+            border: 1px solid rgba(128, 128, 128, 0.22) !important;
+            box-shadow: 0 3px 20px -2px rgba(0, 0, 0, 0.06) !important;
+            padding: 4px 10px !important;
+            max-width: 680px !important;
             margin: 0 auto !important;
+            background: var(--secondary-background-color, #ffffff) !important;
         }
         [data-testid="stChatInput"]:focus-within {
-            border-color: rgba(37, 99, 235, 0.4) !important;
-            box-shadow: 0 2px 16px rgba(37, 99, 235, 0.08) !important;
+            border-color: rgba(128, 128, 128, 0.35) !important;
+            box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.09) !important;
         }
+
+        /* Completely remove inner border, outline, focus ring, and background from chat input textarea */
+        [data-testid="stChatInput"] div,
+        [data-testid="stChatInput"] textarea,
+        [data-testid="stChatInput"] [data-baseweb="base-input"],
+        [data-testid="stChatInput"] [data-baseweb="textarea"] {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+        [data-testid="stChatInput"] textarea {
+            font-size: 0.98rem !important;
+            padding: 8px 6px !important;
+            color: inherit !important;
+            resize: none !important;
+        }
+        [data-testid="stChatInput"] textarea:focus {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Submit button matching hero submit button */
         [data-testid="stChatInputSubmitButton"] {
             border-radius: 50% !important;
+            width: 36px !important;
+            height: 36px !important;
+            min-height: 36px !important;
+            padding: 0 !important;
             background-color: #2563eb !important;
+            color: white !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        [data-testid="stChatInputSubmitButton"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+        [data-testid="stChatInputSubmitButton"] svg {
+            fill: white !important;
             color: white !important;
         }
 
@@ -151,9 +191,9 @@ def render_chat_interface():
             color: inherit !important;
         }
 
-        /* Centered chat messages */
+        /* Centered chat messages matching 680px container */
         [data-testid="stChatMessage"] {
-            max-width: 820px !important;
+            max-width: 680px !important;
             margin: 0 auto !important;
         }
         </style>
