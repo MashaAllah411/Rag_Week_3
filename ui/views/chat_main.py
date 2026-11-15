@@ -178,34 +178,19 @@ def render_chat_interface():
             unsafe_allow_html=True,
         )
 
-        # Hero input bar matching ChatGPT reference layout
+        # Hero input bar — clean input and submit button
         _, center_col, _ = st.columns([1, 4.6, 1])
         with center_col:
             with st.form("hero_chat_form", clear_on_submit=True):
-                c_plus, c_input, c_think, c_mic, c_btn = st.columns(
-                    [0.45, 6.2, 1.25, 0.55, 0.65],
+                c_input, c_btn = st.columns(
+                    [8.8, 0.8],
                     vertical_alignment="center",
                 )
-                with c_plus:
-                    st.markdown(
-                        "<div style='font-size: 1.3rem; text-align: center; color: #64748b; font-weight: 300; cursor: pointer; line-height: 1;'>＋</div>",
-                        unsafe_allow_html=True,
-                    )
                 with c_input:
                     hero_query = st.text_input(
                         "Ask DocChat Pro...",
                         label_visibility="collapsed",
-                        placeholder="Ask DocChat Pro...",
-                    )
-                with c_think:
-                    st.markdown(
-                        "<div style='font-size: 0.82rem; color: #64748b; font-weight: 500; text-align: center; white-space: nowrap;'>🧠 Think</div>",
-                        unsafe_allow_html=True,
-                    )
-                with c_mic:
-                    st.markdown(
-                        "<div style='font-size: 1.05rem; text-align: center; color: #64748b; line-height: 1;'>🎙️</div>",
-                        unsafe_allow_html=True,
+                        placeholder="Ask anything about your documents...",
                     )
                 with c_btn:
                     hero_submit = st.form_submit_button("↑", type="primary")
