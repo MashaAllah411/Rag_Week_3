@@ -12,7 +12,7 @@ from rag.feature_flags import get_active_flags
 
 def render_login_page():
     # ── High-End SaaS Stylesheet ──────────────────────────────
-    st.markdown(
+    st.html(
         """
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -32,7 +32,7 @@ def render_login_page():
             min-height: 100vh !important;
         }
 
-        /* ── Center Layout Container (Spacious 1060px) ───────────── */
+        /* ── Center Layout Container (Spacious 1080px) ───────────── */
         header[data-testid="stHeader"] { background: transparent !important; }
         
         .block-container {
@@ -355,15 +355,14 @@ def render_login_page():
             font-size: 0.8rem;
         }
         </style>
-        """,
-        unsafe_allow_html=True,
+        """
     )
 
     # ── Two-Column Split Layout for Desktop / Widescreen ───────
     col_showcase, col_auth = st.columns([1.18, 1], gap="large")
 
     with col_showcase:
-        st.markdown(
+        st.html(
             """
             <div class="showcase-container">
                 <div class="showcase-pill">
@@ -416,14 +415,13 @@ def render_login_page():
                     </div>
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
+            """
         )
 
     with col_auth:
         with st.container(border=True):
             # Header
-            st.markdown(
+            st.html(
                 """
                 <div class="auth-header">
                     <div class="auth-logo-badge">
@@ -439,8 +437,7 @@ def render_login_page():
                         <span class="tech-badge"><span class="badge-dot dot-emerald"></span>Guardrails</span>
                     </div>
                 </div>
-                """,
-                unsafe_allow_html=True,
+                """
             )
 
             # Credentials Form
@@ -469,19 +466,18 @@ def render_login_page():
                             st.error("Invalid credentials. Use 1-click access below.")
 
             # Quick Demo Access Divider
-            st.markdown(
+            st.html(
                 """
                 <div class="auth-divider">
                     <span>OR INSTANT DEMO ACCESS</span>
                 </div>
-                """,
-                unsafe_allow_html=True,
+                """
             )
 
             # 2 Equal-Width Quick Demo Access Buttons
             col_demo, col_admin = st.columns(2)
             with col_demo:
-                st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
+                st.html('<div class="quick-access-btn">')
                 if st.button("👤 Demo User", use_container_width=True, help="Instant sign in as standard demo user"):
                     with st.spinner("Signing in as Demo User..."):
                         user_data = authenticate("demo", "demo123")
@@ -491,10 +487,10 @@ def render_login_page():
                             if "flags" not in st.session_state:
                                 st.session_state["flags"] = get_active_flags()
                             st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.html('</div>')
 
             with col_admin:
-                st.markdown('<div class="quick-access-btn">', unsafe_allow_html=True)
+                st.html('<div class="quick-access-btn">')
                 if st.button("🛡️ Admin User", use_container_width=True, help="Instant sign in as DataProp admin"):
                     with st.spinner("Signing in as Admin..."):
                         user_data = authenticate("DataProp", "admin2025")
@@ -504,10 +500,10 @@ def render_login_page():
                             if "flags" not in st.session_state:
                                 st.session_state["flags"] = get_active_flags()
                             st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.html('</div>')
 
             # Security & Compliance Footer
-            st.markdown(
+            st.html(
                 """
                 <div class="auth-footer">
                     <span class="footer-item">Role-Based Access</span>
@@ -516,8 +512,7 @@ def render_login_page():
                     <span class="footer-dot">•</span>
                     <span class="footer-item">Cap. W1-12</span>
                 </div>
-                """,
-                unsafe_allow_html=True,
+                """
             )
 
 
