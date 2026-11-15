@@ -292,12 +292,11 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # + New Chat
+    # + New Chat (resets state to landing screen, chat is saved on first question)
     if st.button("＋  New Chat", use_container_width=True, type="primary"):
-        new_id = create_new_chat(username, "New Conversation")
-        st.session_state["current_chat_id"] = new_id
+        st.session_state["current_chat_id"] = None
         st.session_state["messages"] = []
-        st.session_state["current_chat_title"] = "New Conversation"
+        st.session_state["current_chat_title"] = ""
         st.rerun()
 
     # ── Recents ──────────────────────────────────────────────

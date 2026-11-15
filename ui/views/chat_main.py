@@ -20,6 +20,16 @@ def _approx_tokens(text: str) -> int:
     return max(1, len(text or "") // 4)
 
 
+def _extract_title_from_messages(messages: list, fallback: str = "New Conversation") -> str:
+    """Extract a clean title from the first user message."""
+    for m in messages:
+        if m.get("role") == "user":
+            txt = (m.get("content") or "").strip()
+            if txt:
+                return txt.split("\n")[0].strip()[:36]
+    return fallback
+
+
 def render_chat_interface():
     user = st.session_state.get("user", {})
     username = user.get("username", "demo")
@@ -31,22 +41,32 @@ def render_chat_interface():
         if "messages" not in st.session_state:
             saved = load_chat(username, chat_id)
             st.session_state["messages"] = saved.get("messages", []) if saved else []
+            if saved and saved.get("title"):
+                st.session_state["current_chat_title"] = saved.get("title")
     else:
         if "messages" not in st.session_state:
             st.session_state["messages"] = []
 
     messages = st.session_state["messages"]
 
+    # Derive chat title if currently default/blank and messages exist
+    curr_title = st.session_state.get("current_chat_title", "")
+    if not curr_title or curr_title.strip().lower() in ("new conversation", "conversation"):
+        derived = _extract_title_from_messages(messages)
+        if derived != "New Conversation":
+            st.session_state["current_chat_title"] = derived
+
     # ── If there was a pending prompt submitted from the hero bar or suggestion pills ──
     pending = st.session_state.pop("pending_prompt", None)
     if pending:
+        title = pending.strip().split("\n")[0][:36]
         if not chat_id:
-            chat_id = create_new_chat(username, pending[:40])
+            chat_id = create_new_chat(username, title)
             st.session_state["current_chat_id"] = chat_id
-            st.session_state["current_chat_title"] = pending[:40]
 
+        st.session_state["current_chat_title"] = title
         messages.append({"role": "user", "content": pending, "timestamp": time.time()})
-        save_chat(username, chat_id, st.session_state.get("current_chat_title", pending[:40]), messages)
+        save_chat(username, chat_id, title, messages)
         st.session_state["messages"] = messages
 
     # ── Global Styling ───────────────────────────────────────
@@ -362,7 +382,8 @@ def render_chat_interface():
             messages.append(assistant_msg)
 
             # Persist chat
-            title = st.session_state.get("current_chat_title", latest_user_query[:40])
+            title = st.session_state.get("current_chat_title") or _extract_title_from_messages(messages, latest_user_query[:36])
+            st.session_state["current_chat_title"] = title
             save_chat(username, chat_id, title, messages)
 
         st.rerun()
@@ -370,8 +391,19 @@ def render_chat_interface():
     # ── Continuous Chat Input (bottom bar) ───────────────────
     user_input = st.chat_input("Ask anything about your documents...")
     if user_input:
+        if not chat_id:
+            title = user_input.strip().split("\n")[0][:36]
+            chat_id = create_new_chat(username, title)
+            st.session_state["current_chat_id"] = chat_id
+            st.session_state["current_chat_title"] = title
+
         messages.append({"role": "user", "content": user_input, "timestamp": time.time()})
-        save_chat(username, chat_id, st.session_state.get("current_chat_title", user_input[:40]), messages)
+        title = st.session_state.get("current_chat_title")
+        if not title or title.strip().lower() in ("new conversation", "conversation"):
+            title = _extract_title_from_messages(messages, user_input[:36])
+            st.session_state["current_chat_title"] = title
+
+        save_chat(username, chat_id, title, messages)
         st.session_state["messages"] = messages
         st.rerun()
 

@@ -23,6 +23,17 @@ def _user_dir(username: str) -> Path:
     return path
 
 
+def _extract_title(messages: List[Dict[str, Any]], default: str = "New Conversation") -> str:
+    """Extract a clean title from the first user message."""
+    for m in messages:
+        if m.get("role") == "user":
+            content = (m.get("content") or "").strip()
+            if content:
+                first_line = content.split("\n")[0].strip()
+                return first_line[:40]
+    return default
+
+
 def list_chats(username: str) -> List[Dict[str, Any]]:
     """List all chats for a given user, ordered by most recently modified first."""
     udir = _user_dir(username)
@@ -31,13 +42,29 @@ def list_chats(username: str) -> List[Dict[str, Any]]:
         try:
             with open(f, "r", encoding="utf-8") as fp:
                 data = json.load(fp)
-                chats.append({
-                    "chat_id": data.get("chat_id", f.stem),
-                    "title": data.get("title", "New Conversation"),
-                    "created_at": data.get("created_at", ""),
-                    "message_count": len(data.get("messages", [])),
-                    "mtime": f.stat().st_mtime,
-                })
+
+            msgs = data.get("messages", [])
+            title = data.get("title", "")
+            if not title or title.strip().lower() in ("new conversation", "conversation"):
+                derived = _extract_title(msgs)
+                if derived != "New Conversation":
+                    title = derived
+                    data["title"] = title
+                    try:
+                        with open(f, "w", encoding="utf-8") as fp_out:
+                            json.dump(data, fp_out, indent=2, ensure_ascii=False)
+                    except Exception:
+                        pass
+                else:
+                    title = "New Conversation"
+
+            chats.append({
+                "chat_id": data.get("chat_id", f.stem),
+                "title": title,
+                "created_at": data.get("created_at", ""),
+                "message_count": len(msgs),
+                "mtime": f.stat().st_mtime,
+            })
         except Exception:
             continue
     chats.sort(key=lambda x: x.get("mtime", 0), reverse=True)
@@ -51,7 +78,14 @@ def load_chat(username: str, chat_id: str) -> Optional[Dict[str, Any]]:
         return None
     try:
         with open(fpath, "r", encoding="utf-8") as fp:
-            return json.load(fp)
+            data = json.load(fp)
+        msgs = data.get("messages", [])
+        title = data.get("title", "")
+        if not title or title.strip().lower() in ("new conversation", "conversation"):
+            derived = _extract_title(msgs)
+            if derived != "New Conversation":
+                data["title"] = derived
+        return data
     except Exception:
         return None
 
@@ -66,6 +100,10 @@ def save_chat(
     """Persist conversation messages and metadata."""
     udir = _user_dir(username)
     fpath = udir / f"{chat_id}.json"
+
+    # If title is default or blank, gather from the first user message
+    if not title or title.strip().lower() in ("new conversation", "conversation"):
+        title = _extract_title(messages, default="New Conversation")
 
     data = {
         "chat_id": chat_id,
