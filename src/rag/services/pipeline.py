@@ -333,3 +333,349 @@ def run_pipeline(
         "source_document": document_name or "InsurancePolicy.pdf",
         "pipeline_steps": pipeline_steps,
     }
+
+
+
+def run_pipeline_stream(
+    question: str,
+    mode: str = "hybrid",
+    top_k: int = 5,
+    similarity_threshold: float = 0.45,
+    use_query_rewriter: bool = True,
+    document_name: Optional[str] = None,
+    scan_injection: bool = False,
+):
+    """
+    Generator yielding structured SSE events for ChatGPT-style Thinking and Response UI:
+      - {"type": "status", "stage": str, "label": str, "step": int, "total_steps": 5, "status": "running"|"completed", "detail": str}
+      - {"type": "token", "content": str}
+      - {"type": "completed", "data": dict}
+      - {"type": "error", "message": str}
+    """
+    import time
+    from rag.config import LLM_PROVIDER, GROQ_MODEL, OLLAMA_MODEL
+    _active_model = GROQ_MODEL if LLM_PROVIDER.lower() == 'groq' else OLLAMA_MODEL
+    t0 = time.time()
+    pipeline_steps = []
+    rt = RequestTrace(query=redact_pii(question), request_id="ask_stream",
+                      metadata={"mode": mode, "top_k": top_k, "document": document_name or "all"})
+
+    try:
+        # ── Step 1: Understanding your question ──
+        yield {
+            "type": "status",
+            "stage": "understanding",
+            "label": "Understanding your question...",
+            "step": 1,
+            "total_steps": 5,
+            "status": "running",
+            "detail": "Verifying request scope & domain boundaries",
+        }
+        from rag.core.scope_guard import check_question_scope
+        scope = check_question_scope(question, document_name=document_name)
+
+        if not scope.allowed:
+            pipeline_steps.append(f"Scope guard rejected request: {scope.reason}")
+            _finish_trace(rt, _OUT_OF_SCOPE_RESPONSE, "unknown")
+            yield {
+                "type": "status",
+                "stage": "understanding",
+                "label": "Understanding your question",
+                "step": 1,
+                "total_steps": 5,
+                "status": "completed",
+                "detail": "Question outside policy corpus boundaries",
+            }
+            # Stream refusal text
+            for word in _OUT_OF_SCOPE_RESPONSE.split(" "):
+                yield {"type": "token", "content": word + " "}
+                time.sleep(0.02)
+            yield {
+                "type": "completed",
+                "data": {
+                    "question": question,
+                    "rewritten_query": None,
+                    "answer": _OUT_OF_SCOPE_RESPONSE,
+                    "retrieved_chunks": [],
+                    "mode": mode,
+                    "confidence": "unknown",
+                    "source_document": document_name or "InsurancePolicy.pdf",
+                    "pipeline_steps": pipeline_steps,
+                    "latency": time.time() - t0,
+                },
+            }
+            return
+
+        if scope.reason == "system_intro":
+            intro_text = (
+                "👋 Hello! I am **DocChat Pro**, your Enterprise Policy and Claims Intelligence Assistant.\n\n"
+                "Here is what I can assist you with:\n"
+                "- 🚗 **Policy Coverage & Terms**: Verify Own Damage (OD), Third-Party (TP) liabilities, deductibles, and endorsement terms.\n"
+                "- 💰 **IDV & Depreciation Schedules**: Calculate vehicle age depreciation, Insured Declared Value (IDV), and total loss limits.\n"
+                "- 🛡️ **Claims & Exclusions**: Triage incident coverage, flood/water ingress clauses, consequential damage, and claim conditions.\n"
+                "- 📑 **Verifiable Evidence**: Every answer cites exact clauses and sections from your official policy document.\n\n"
+                "Feel free to ask any question about your policy, coverage terms, or claim scenarios!"
+            )
+            pipeline_steps.append("Scope guard verified: platform identity and capabilities request")
+            _finish_trace(rt, intro_text, "high")
+            yield {
+                "type": "status",
+                "stage": "understanding",
+                "label": "Understanding your question",
+                "step": 1,
+                "total_steps": 5,
+                "status": "completed",
+                "detail": "Platform identity & capabilities recognized",
+            }
+            for chunk in intro_text.split("\n"):
+                for w in chunk.split(" "):
+                    if w:
+                        yield {"type": "token", "content": w + " "}
+                        time.sleep(0.015)
+                yield {"type": "token", "content": "\n"}
+            yield {
+                "type": "completed",
+                "data": {
+                    "question": question,
+                    "rewritten_query": None,
+                    "answer": intro_text,
+                    "retrieved_chunks": [],
+                    "mode": mode,
+                    "confidence": "high",
+                    "source_document": document_name or "InsurancePolicy.pdf",
+                    "pipeline_steps": pipeline_steps,
+                    "latency": time.time() - t0,
+                },
+            }
+            return
+
+        yield {
+            "type": "status",
+            "stage": "understanding",
+            "label": "Understanding your question",
+            "step": 1,
+            "total_steps": 5,
+            "status": "completed",
+            "detail": "Scope verified against policy corpus",
+        }
+
+        # ── Step 2: Analyzing your query ──
+        yield {
+            "type": "status",
+            "stage": "analyzing_query",
+            "label": "Analyzing your query...",
+            "step": 2,
+            "total_steps": 5,
+            "status": "running",
+            "detail": "Extracting key insurance concepts",
+        }
+        rewritten_query = question
+        if use_query_rewriter:
+            try:
+                rewrite_query = _get_query_rewriter()
+                rewritten_query = rewrite_query(question)
+                pipeline_steps.append(f"Query rewritten: '{question}' → '{rewritten_query}'")
+                yield {
+                    "type": "status",
+                    "stage": "analyzing_query",
+                    "label": "Analyzing your query",
+                    "step": 2,
+                    "total_steps": 5,
+                    "status": "completed",
+                    "detail": f'Expanded to: "{rewritten_query[:60]}"' if rewritten_query != question else "Query normalized",
+                }
+            except Exception as e:
+                rewritten_query = question
+                pipeline_steps.append(f"Query rewriter fallback: {e}")
+                yield {
+                    "type": "status",
+                    "stage": "analyzing_query",
+                    "label": "Analyzing your query",
+                    "step": 2,
+                    "total_steps": 5,
+                    "status": "completed",
+                    "detail": "Query normalized for retrieval",
+                }
+        else:
+            yield {
+                "type": "status",
+                "stage": "analyzing_query",
+                "label": "Analyzing your query",
+                "step": 2,
+                "total_steps": 5,
+                "status": "completed",
+                "detail": "Direct query pass-through",
+            }
+
+        search_query = rewritten_query
+
+        # ── Step 3: Searching relevant documents & passages ──
+        yield {
+            "type": "status",
+            "stage": "retrieval",
+            "label": f"Searching relevant documents ({mode.title()} mode)...",
+            "step": 3,
+            "total_steps": 5,
+            "status": "running",
+            "detail": f"Scanning policy clauses (top_k={top_k})",
+        }
+        raw_chunks: List[Dict] = []
+        if mode == "semantic":
+            embed_fn = _get_embedder()
+            search_fn = _get_vector_search()
+            query_vec = embed_fn(search_query)
+            metadata_filter = {"document_name": {"$eq": document_name}} if document_name else None
+            raw_results = search_fn(query_vec, top_k=top_k, filter=metadata_filter)
+            for r in raw_results:
+                raw_chunks.append({"id": r["id"], "text": r["text"], "score": r.get("score", 0.0)})
+            pipeline_steps.append(f"Semantic search → {len(raw_chunks)} chunks retrieved")
+
+        elif mode == "hybrid":
+            hybrid_fn = _get_hybrid_search()
+            raw_results = hybrid_fn(search_query, top_k=top_k, candidate_k=10, document_name=document_name)
+            for r in raw_results:
+                raw_chunks.append({
+                    "id": r["id"],
+                    "text": r["text"],
+                    "score": r.get("rrf_score", 0.0),
+                    "semantic_rank": r.get("semantic_rank"),
+                    "bm25_rank": r.get("bm25_rank"),
+                })
+            pipeline_steps.append(f"Hybrid search (RRF) → {len(raw_chunks)} chunks retrieved")
+
+        elif mode == "reranked":
+            hybrid_fn = _get_hybrid_search()
+            hybrid_candidates = hybrid_fn(search_query, top_k=10, candidate_k=10, document_name=document_name)
+            rerank_fn = _get_reranker()
+            reranked = rerank_fn(search_query, hybrid_candidates, top_k=min(6, len(hybrid_candidates)))
+            mmr_fn = _get_mmr()
+            final = mmr_fn(search_query, reranked, top_k=top_k, lambda_param=0.6)
+            for r in final:
+                raw_chunks.append({
+                    "id": r["id"],
+                    "text": r["text"],
+                    "score": r.get("rerank_score", r.get("rrf_score", 0.0)),
+                    "semantic_rank": r.get("semantic_rank"),
+                    "bm25_rank": r.get("bm25_rank"),
+                    "rerank_score": r.get("rerank_score"),
+                })
+            pipeline_steps.append(f"Reranked search → {len(raw_chunks)} chunks retrieved")
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
+
+        yield {
+            "type": "status",
+            "stage": "retrieval",
+            "label": "Searching relevant documents",
+            "step": 3,
+            "total_steps": 5,
+            "status": "completed",
+            "detail": f"Retrieved & ranked {len(raw_chunks)} clauses ({mode.title()} search)",
+            "chunks_count": len(raw_chunks),
+        }
+
+        # ── Step 4: Analyzing retrieved context ──
+        yield {
+            "type": "status",
+            "stage": "context_analysis",
+            "label": "Analyzing retrieved context...",
+            "step": 4,
+            "total_steps": 5,
+            "status": "running",
+            "detail": "Assessing clause relevance & safety guardrails",
+        }
+        if scan_injection and raw_chunks:
+            from rag.core.injection_guard import filter_chunks
+            raw_chunks, quarantined = filter_chunks(raw_chunks)
+            if quarantined:
+                pipeline_steps.append(f"Injection scan quarantined {len(quarantined)} chunk(s)")
+
+        confidence = _assess_confidence(raw_chunks, similarity_threshold)
+        pipeline_steps.append(f"Confidence assessment: {confidence.upper()}")
+        yield {
+            "type": "status",
+            "stage": "context_analysis",
+            "label": "Analyzing retrieved context",
+            "step": 4,
+            "total_steps": 5,
+            "status": "completed",
+            "detail": f"Confidence: {confidence.upper()}",
+            "confidence": confidence,
+        }
+
+        # ── Step 5: Generating your answer ──
+        yield {
+            "type": "status",
+            "stage": "generating_answer",
+            "label": "Generating your answer...",
+            "step": 5,
+            "total_steps": 5,
+            "status": "running",
+            "detail": f"Streaming tokens via {LLM_PROVIDER.upper()}",
+        }
+
+        pass
+        full_answer = ""
+
+        if not raw_chunks or confidence == "unknown":
+            full_answer = _IDK_RESPONSE
+            for w in _IDK_RESPONSE.split(" "):
+                yield {"type": "token", "content": w + " "}
+                time.sleep(0.02)
+        else:
+            from rag.generation.llm import stream_llm_with_context
+            context = "\n\n---\n\n".join(c["text"] for c in raw_chunks)
+            for token in stream_llm_with_context(question, context):
+                full_answer += token
+                yield {"type": "token", "content": token}
+
+        yield {
+            "type": "status",
+            "stage": "generating_answer",
+            "label": "Generating your answer",
+            "step": 5,
+            "total_steps": 5,
+            "status": "completed",
+            "detail": f"Synthesized with grounded citations ({LLM_PROVIDER.upper()})",
+        }
+
+        elapsed = time.time() - t0
+        _finish_trace(rt, full_answer, confidence, status="COMPLETED")
+
+        # ── Log trace ──
+        try:
+            from rag.observability.tracer import log_trace
+            log_trace(
+                query=question,
+                retrieved_chunks=raw_chunks,
+                raw_llm_output=full_answer,
+                prompt_version="v1.0",
+                retriever_type=f"Web API Stream ({mode})",
+                model_name=f"{LLM_PROVIDER}:{_active_model}",
+                model_parameters={"temperature": 0.4, "top_p": 0.9}
+            )
+        except Exception:
+            pass
+
+        yield {
+            "type": "completed",
+            "data": {
+                "question": question,
+                "rewritten_query": rewritten_query if rewritten_query != question else None,
+                "answer": full_answer,
+                "retrieved_chunks": raw_chunks,
+                "mode": mode,
+                "confidence": confidence,
+                "source_document": document_name or "InsurancePolicy.pdf",
+                "pipeline_steps": pipeline_steps,
+                "latency": elapsed,
+                "provider": LLM_PROVIDER.upper(),
+            },
+        }
+
+    except Exception as e:
+        logger.error(f"[PIPELINE STREAM] Unhandled error: {e}", exc_info=True)
+        yield {
+            "type": "error",
+            "message": f"Processing error: {str(e)}",
+        }

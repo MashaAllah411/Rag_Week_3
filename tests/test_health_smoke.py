@@ -118,3 +118,19 @@ def test_deterministic_assertions_endpoint():
     assert data["claim_number_format"] is True
     assert data["date_of_loss_present"] is True
     assert data["numeric_deductible_present"] is True
+
+
+
+def test_ask_stream_endpoint():
+    """Verify POST /api/ask/stream streams structured SSE events."""
+    import json
+    with client.stream("POST", "/api/ask/stream", json={"question": "give me intro about youself?"}) as resp:
+        assert resp.status_code == 200
+        event_types = set()
+        for line in resp.iter_lines():
+            if line and line.startswith("data: "):
+                data = json.loads(line[6:])
+                event_types.add(data.get("type"))
+        assert "status" in event_types
+        assert "token" in event_types
+        assert "completed" in event_types

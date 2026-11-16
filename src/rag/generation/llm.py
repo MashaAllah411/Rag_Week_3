@@ -78,3 +78,59 @@ def query_llm_with_context(query: str, context: str) -> str:
     # Default / fallback: Ollama
     logger.info("[LLM] Using Ollama (%s)", OLLAMA_MODEL)
     return _query_ollama(query, context)
+
+
+def stream_llm_with_context(query: str, context: str):
+    """
+    Stream tokens from Groq or Ollama in real-time.
+    Yields string deltas as they arrive from the model.
+    """
+    provider = LLM_PROVIDER.lower().strip()
+
+    if provider == "groq" and GROQ_API_KEY:
+        try:
+            logger.info("[LLM STREAM] Streaming with Groq (%s)", GROQ_MODEL)
+            from groq import Groq
+            client = Groq(api_key=GROQ_API_KEY)
+            stream = client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": _SYSTEM_PROMPT.format(context=context)},
+                    {"role": "user",   "content": f"Question: {query}"},
+                ],
+                temperature=0.2,
+                max_tokens=1024,
+                stream=True,
+            )
+            for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta:
+                    content = chunk.choices[0].delta.content
+                    if content:
+                        yield content
+            return
+        except Exception as e:
+            logger.warning("[LLM STREAM] Groq streaming failed (%s), falling back to Ollama", e)
+
+    # Fallback to Ollama streaming
+    try:
+        logger.info("[LLM STREAM] Streaming with Ollama (%s)", OLLAMA_MODEL)
+        import ollama
+        stream = ollama.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT.format(context=context)},
+                {"role": "user",   "content": f"Question: {query}"},
+            ],
+            options={"temperature": 0.2},
+            stream=True,
+        )
+        for chunk in stream:
+            c = chunk.get("message", {}).get("content", "")
+            if c:
+                yield c
+    except Exception as e:
+        logger.error("[LLM STREAM] Ollama streaming failed: %s", e)
+        try:
+            yield query_llm_with_context(query, context)
+        except Exception as e2:
+            yield f"Error generating answer: {e2}"

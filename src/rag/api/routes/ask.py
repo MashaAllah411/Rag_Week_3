@@ -6,9 +6,11 @@
 # ============================================================
 
 import logging
+import json
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from rag.models.schemas import AskRequest, AskResponse, ChunkResult
-from rag.services.pipeline import run_pipeline
+from rag.services.pipeline import run_pipeline, run_pipeline_stream
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -66,4 +68,45 @@ async def ask(request: AskRequest):
         confidence=result["confidence"],
         source_document=result["source_document"],
         pipeline_steps=result["pipeline_steps"],
+    )
+
+
+
+@router.post("/ask/stream", summary="Stream RAG pipeline execution events and response tokens")
+async def ask_stream(request: AskRequest):
+    """
+    Server-Sent Events (SSE) streaming endpoint.
+    Yields structured JSON events:
+      - status: current pipeline stage and activity description
+      - token: streamed text delta from the LLM
+      - completed: final structured payload with citations and timing
+      - error: error details if pipeline fails
+    """
+    logger.info(f"[ASK STREAM] Question: '{request.question}' | Mode: {request.mode} | top_k: {request.top_k}")
+
+    def event_generator():
+        try:
+            for event in run_pipeline_stream(
+                question=request.question,
+                mode=request.mode,
+                top_k=request.top_k,
+                similarity_threshold=request.similarity_threshold,
+                use_query_rewriter=request.use_query_rewriter,
+                document_name=request.document_name,
+                scan_injection=request.scan_injection,
+            ):
+                yield f"data: {json.dumps(event)}\n\n"
+        except Exception as e:
+            logger.error(f"[ASK STREAM] Generator error: {e}", exc_info=True)
+            err_dict = {"type": "error", "message": f"Server streaming error: {str(e)}"}
+            yield f"data: {json.dumps(err_dict)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
     )

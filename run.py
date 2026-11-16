@@ -515,7 +515,8 @@ def main() -> None:
     # ── 1. Start FastAPI Backend ─────────────────────────────
     print("[STARTUP] Starting FastAPI backend (uvicorn)...")
     backend_cmd = [sys.executable, "-m", "uvicorn", "rag.api.main:app",
-                   "--host", backend_host, "--port", str(backend_port), "--log-level", "info"]
+                   "--host", backend_host, "--port", str(backend_port), "--log-level", "info",
+                   "--reload", "--reload-dir", "src"]
     backend_proc = subprocess.Popen(backend_cmd, cwd=str(REPO_ROOT), env=child_env(),
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                                     bufsize=1, encoding="utf-8", errors="replace")
