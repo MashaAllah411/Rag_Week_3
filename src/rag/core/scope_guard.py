@@ -11,9 +11,30 @@ from rag.config import OLLAMA_MODEL
 _TOKEN_RE = re.compile(r"[a-zA-Z]{2,}")
 _VOWELS = set("aeiou")
 _INSURANCE_HINTS = (
-    "insur", "polic", "claim", "coverage", "cover", "premium", "vehicle",
+    "insur", "polic", "claim", "cliam", "coverage", "cover", "premium", "vehicle",
     "car", "accident", "damage", "add-on", "add on", "depreciation",
 )
+
+_INTRO_PATTERNS = (
+    "intro",
+    "about you",
+    "about yourself",
+    "who are you",
+    "what are you",
+    "what can you do",
+    "what do you do",
+    "introduce yourself",
+    "tell me about yourself",
+    "what is docchat",
+    "what is this app",
+    "how can you help",
+    "how does this work",
+)
+
+_GREETING_WORDS = {
+    "hi", "hello", "hey", "greetings", "good morning",
+    "good afternoon", "good evening", "hi there", "hello there",
+}
 
 
 @dataclass(frozen=True)
@@ -53,8 +74,13 @@ def check_question_scope(question: str, document_name: str | None = None) -> Sco
     if _is_gibberish(question):
         return ScopeDecision(False, "invalid_input")
 
+    # Fast-path greetings and platform intro/capabilities queries
+    q_norm = question.strip().lower().rstrip("?!., ")
+    if q_norm in _GREETING_WORDS or any(p in q_norm for p in _INTRO_PATTERNS):
+        return ScopeDecision(True, "system_intro")
+
     # Fast-path clear insurance questions, including common spelling variants
-    # such as "Insurence company name".
+    # such as "Insurence company name" or "cliam".
     if any(term in question.lower() for term in _INSURANCE_HINTS):
         return ScopeDecision(True, "insurance_terms")
 

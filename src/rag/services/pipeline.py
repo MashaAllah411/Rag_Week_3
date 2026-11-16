@@ -152,6 +152,28 @@ def run_pipeline(
             "source_document": document_name or "InsurancePolicy.pdf",
             "pipeline_steps": pipeline_steps,
         }
+    if scope.reason == "system_intro":
+        intro_text = (
+            "👋 Hello! I am **DocChat Pro**, your Enterprise Policy and Claims Intelligence Assistant.\n\n"
+            "Here is what I can assist you with:\n"
+            "- 🚗 **Policy Coverage & Terms**: Verify Own Damage (OD), Third-Party (TP) liabilities, deductibles, and endorsement terms.\n"
+            "- 💰 **IDV & Depreciation Schedules**: Calculate vehicle age depreciation, Insured Declared Value (IDV), and total loss limits.\n"
+            "- 🛡️ **Claims & Exclusions**: Triage incident coverage, flood/water ingress clauses, consequential damage, and claim conditions.\n"
+            "- 📑 **Verifiable Evidence**: Every answer cites exact clauses and sections from your official policy document.\n\n"
+            "Feel free to ask any question about your policy, coverage terms, or claim scenarios!"
+        )
+        pipeline_steps.append("Scope guard verified: platform identity and capabilities request")
+        _finish_trace(rt, intro_text, "high")
+        return {
+            "question": question,
+            "rewritten_query": None,
+            "answer": intro_text,
+            "retrieved_chunks": [],
+            "mode": mode,
+            "confidence": "high",
+            "source_document": document_name or "InsurancePolicy.pdf",
+            "pipeline_steps": pipeline_steps,
+        }
     if scope.reason == "guard_unavailable":
         pipeline_steps.append("Scope guard unavailable; continuing with retrieval")
 

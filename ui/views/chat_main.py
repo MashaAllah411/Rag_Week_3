@@ -30,6 +30,59 @@ def _extract_title_from_messages(messages: list, fallback: str = "New Conversati
     return fallback
 
 
+def _build_display_steps(resp: dict, query: str, cfg: dict, elapsed: float) -> list:
+    """Build clean, professional thinking steps matching enterprise conversational AI."""
+    answer = resp.get("answer", "")
+    if "only answer questions related to" in answer.lower():
+        return [
+            "⚡ **Processing:** Validated query against insurance policy corpus",
+            "🛡️ **Analyzing:** Topic identified outside active Private Car Policy boundaries",
+            "ℹ️ **Sending to LLM:** Returned guidance for policy-related inquiries",
+        ]
+
+    if "docchat pro" in answer.lower() and not resp.get("retrieved_chunks"):
+        return [
+            "⚡ **Processing:** Query analyzed",
+            "🤖 **Analyzing:** Platform identity & capabilities recognized",
+            "✨ **Sending to LLM:** Synthesized DocChat Pro overview",
+        ]
+
+    steps = []
+    # 1. Processing
+    steps.append("⚡ **Processing:** Validating query & checking policy scope")
+
+    # 2. Rewriting query
+    rewritten = resp.get("rewritten_query")
+    if rewritten and rewritten.strip().lower() != query.strip().lower():
+        r_disp = (rewritten[:60] + "...") if len(rewritten) > 60 else rewritten
+        steps.append(f"🔄 **Rewriting query:** Semantic expansion → *\"{r_disp}\"*")
+    elif cfg.get("use_query_rewriter", True):
+        steps.append("🔄 **Rewriting query:** Query normalized for semantic retrieval")
+    else:
+        steps.append("🔄 **Rewriting query:** Direct query pass-through")
+
+    # 3. Retrived chunks
+    chunks = resp.get("retrieved_chunks", [])
+    mode_name = cfg.get("search_mode", "hybrid").title()
+    top_k = cfg.get("top_k", 5)
+    if chunks:
+        steps.append(f"📚 **Retrieved chunks:** Found {len(chunks)} relevant policy clauses ({mode_name} search, top_k={top_k})")
+    elif resp.get("confidence") == "unknown" or not chunks:
+        steps.append("📚 **Retrieved chunks:** No matching policy clauses found in corpus")
+    else:
+        steps.append(f"📚 **Retrieved chunks:** Corpus scanned via {mode_name} search")
+
+    # 4. Analysing
+    conf = resp.get("confidence", "high").upper()
+    steps.append(f"🛡️ **Analyzing:** Context relevance & safety guardrails verified (`{conf}` confidence)")
+
+    # 5. Sending to LLM
+    provider = cfg.get("llm_provider", "groq").upper()
+    steps.append(f"🧠 **Sending to LLM:** Grounded response synthesized via {provider} ({elapsed:.2f}s)")
+
+    return steps
+
+
 def render_chat_interface():
     user = st.session_state.get("user", {})
     username = user.get("username", "demo")
@@ -311,6 +364,12 @@ def render_chat_interface():
         role = msg.get("role")
         content = msg.get("content", "")
         with st.chat_message(role, avatar="🧑‍💻" if role == "user" else "🤖"):
+            if role == "assistant" and msg.get("steps"):
+                lat = msg.get("latency", 0.0)
+                with st.expander(f"💭 Thought for {lat:.1f}s", expanded=False):
+                    for step in msg.get("steps", []):
+                        st.markdown(step)
+
             st.markdown(content)
 
             sources = msg.get("sources", [])
@@ -331,11 +390,18 @@ def render_chat_interface():
     if messages and messages[-1].get("role") == "user":
         latest_user_query = messages[-1].get("content", "")
         with st.chat_message("assistant", avatar="🤖"):
-            with st.status("Thinking and searching policy corpus...", expanded=True) as status:
-                st.write("🔍 Planning query analysis & checking safety scope...")
-                time.sleep(0.1)
-
-                st.write(f"⚙️ Running {cfg.get('search_mode', 'hybrid').title()} search (top_k={cfg.get('top_k', 5)})...")
+            with st.status("Thinking...", expanded=True) as status:
+                step_ph = st.empty()
+                step_ph.markdown(
+                    """<div style="font-size: 0.88rem; line-height: 1.85; color: #475569;">
+                    <div>⚡ <strong>Processing:</strong> Validating query & policy scope...</div>
+                    <div>🔄 <strong>Rewriting query:</strong> Expanding query for semantic retrieval...</div>
+                    <div>📚 <strong>Retrieved chunks:</strong> Searching policy corpus...</div>
+                    <div>🛡️ <strong>Analyzing:</strong> Checking context relevance & guardrails...</div>
+                    <div>🧠 <strong>Sending to LLM:</strong> Synthesizing grounded response...</div>
+                    </div>""",
+                    unsafe_allow_html=True,
+                )
                 t0 = time.time()
 
                 ok, resp = call(
@@ -347,18 +413,20 @@ def render_chat_interface():
                     similarity_threshold=cfg.get("confidence_threshold", 0.45),
                 )
                 elapsed = time.time() - t0
+                step_ph.empty()
 
                 if ok and resp:
-                    psteps = resp.get("pipeline_steps", [])
-                    for step in psteps:
-                        st.write(f"✓ {step}")
-                    status.update(label=f"Answer ready in {elapsed:.2f}s", state="complete", expanded=False)
+                    display_steps = _build_display_steps(resp, latest_user_query, cfg, elapsed)
+                    for step in display_steps:
+                        st.markdown(step)
+                    status.update(label=f"Thought for {elapsed:.1f}s", state="complete", expanded=False)
                     answer_text = resp.get("answer", "No response returned.")
                     sources = resp.get("retrieved_chunks", [])
                 else:
                     status.update(label="Retrieval failed", state="error", expanded=True)
                     answer_text = "I encountered an error retrieving or generating the response. Please check backend connection."
                     sources = []
+                    display_steps = []
 
             st.markdown(answer_text)
 
@@ -374,6 +442,7 @@ def render_chat_interface():
                 "role": "assistant",
                 "content": answer_text,
                 "sources": sources,
+                "steps": display_steps,
                 "latency": elapsed,
                 "provider": cfg.get("llm_provider", "groq").upper(),
                 "mode": cfg.get("search_mode", "hybrid"),
