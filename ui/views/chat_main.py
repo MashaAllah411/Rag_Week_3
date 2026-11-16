@@ -9,6 +9,7 @@ Features:
 - Context token gauge
 - Session persistence via chat_store
 """
+import re
 import time
 import streamlit as st
 from ui.api_client import api
@@ -31,6 +32,33 @@ def _extract_title_from_messages(messages: list, fallback: str = "New Conversati
 
 
 
+
+
+
+def format_citations(text: str) -> str:
+    """Format raw LLM citation markers like 【1†L1-L3】 into clean, professional citation badges."""
+    if not text or "【" not in text:
+        return text
+
+    def _replace_cite(match):
+        body = match.group(1).strip()
+        if "†" in body:
+            parts = body.split("†", 1)
+            chunk_num = parts[0].strip()
+            lines = parts[1].strip()
+            return (
+                f'<span style="display:inline-block; font-size:0.75rem; font-weight:600; '
+                f'color:#2563eb; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.22); '
+                f'border-radius:4px; padding:0 5px; margin:0 2px; vertical-align:baseline; cursor:help;" '
+                f'title="Source Chunk {chunk_num} ({lines})">[{chunk_num}]</span>'
+            )
+        return (
+            f'<span style="display:inline-block; font-size:0.75rem; font-weight:600; '
+            f'color:#2563eb; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.22); '
+            f'border-radius:4px; padding:0 5px; margin:0 2px; vertical-align:baseline;">[{body}]</span>'
+        )
+
+    return re.sub(r'【([^】]+)】', _replace_cite, text)
 
 def render_chatgpt_timeline_html(stages: list, is_complete: bool = False) -> str:
     """
@@ -460,7 +488,7 @@ def render_chat_interface():
                         for step in msg.get("steps", []):
                             st.markdown(step)
 
-            st.markdown(content)
+            st.markdown(format_citations(content), unsafe_allow_html=True)
 
             sources = msg.get("sources", [])
             if sources:
@@ -546,7 +574,7 @@ def render_chat_interface():
                     elif ev_type == "token":
                         token_txt = event.get("content", "")
                         full_streamed_answer += token_txt
-                        answer_ph.markdown(full_streamed_answer + '<span class="chatgpt-cursor"></span>', unsafe_allow_html=True)
+                        answer_ph.markdown(format_citations(full_streamed_answer) + '<span class="chatgpt-cursor"></span>', unsafe_allow_html=True)
 
                     elif ev_type == "completed":
                         completed_payload = event.get("data", {})
@@ -575,7 +603,7 @@ def render_chat_interface():
                 status_container.update(label=f"Thought for {elapsed:.1f}s", state="complete", expanded=False)
 
                 # Render final markdown without cursor
-                answer_ph.markdown(final_answer)
+                answer_ph.markdown(format_citations(final_answer), unsafe_allow_html=True)
 
                 sources = completed_payload.get("retrieved_chunks", []) if completed_payload else []
                 if sources:
