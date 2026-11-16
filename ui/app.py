@@ -103,7 +103,10 @@ if not st.session_state.get("authenticated", False):
 current_user = st.session_state.get("user", {})
 username = current_user.get("username", "demo")
 is_admin = current_user.get("role") == "admin"
-flags = st.session_state.get("flags", {})
+flags = get_active_flags()
+if "flags" in st.session_state:
+    flags.update(st.session_state["flags"])
+st.session_state["flags"] = flags
 
 # ── Primary Workspace Pages ──────────────────────────────────
 PAGES = {
@@ -114,37 +117,41 @@ PAGES = {
     ]
 }
 
-# ── Admin Legacy Dev Tools (Activated via Feature Flags) ─────
-if is_admin:
-    legacy_pages = []
-    if flags.get("show_foundations_lab_tab"):
-        legacy_pages.append(st.Page("views/foundations.py", title="Foundations Lab", icon="🧪", url_path="foundations"))
-    if flags.get("show_guardrails_tab"):
-        legacy_pages.append(st.Page("views/guardrails.py", title="Guardrails & Security", icon="🛡️", url_path="guardrails"))
-    if flags.get("show_advanced_search_modes"):
-        legacy_pages.append(st.Page("views/search_qa.py", title="Legacy Search & Q&A", icon="🔍", url_path="search"))
-        legacy_pages.append(st.Page("views/documents.py", title="Legacy Documents", icon="📄", url_path="legacy-docs"))
-    if flags.get("show_evaluation_tab"):
-        legacy_pages.append(st.Page("views/evaluation.py", title="Evaluation", icon="🎯", url_path="evaluation"))
-    if flags.get("show_error_analysis_tab"):
-        legacy_pages.append(st.Page("views/error_analysis.py", title="Error Analysis", icon="🔬", url_path="error-analysis"))
-    if flags.get("show_agent_triage_tab"):
-        legacy_pages.append(st.Page("views/agent_triage.py", title="Agent Triage", icon="🤖", url_path="agent-triage"))
-    if flags.get("show_mcp_ecosystem_tab"):
-        legacy_pages.append(st.Page("views/mcp.py", title="MCP Ecosystem", icon="🔌", url_path="mcp"))
-    if flags.get("show_multi_agent_tab"):
-        legacy_pages.append(st.Page("views/multi_agent.py", title="Multi-Agent Squad", icon="👥", url_path="multi-agent"))
-    if flags.get("show_observability_tab"):
-        legacy_pages.append(st.Page("views/observability.py", title="Observability", icon="📊", url_path="observability"))
-    if flags.get("show_capstone_tab"):
-        legacy_pages.append(st.Page("views/capstone.py", title="Capstone", icon="🏁", url_path="capstone"))
-    if flags.get("show_hr_policy_desk_tab"):
-        legacy_pages.append(st.Page("views/hr_policy_desk.py", title="HR Policy Desk", icon="🏢", url_path="hr-policy-desk"))
+# ── Platform Capabilities (Activated via Feature Flags) ─────
+capability_pages = []
+if flags.get("show_agent_triage_tab"):
+    capability_pages.append(st.Page("views/agent_triage.py", title="Agent Triage", icon="🤖", url_path="agent-triage"))
+if flags.get("show_mcp_ecosystem_tab"):
+    capability_pages.append(st.Page("views/mcp.py", title="MCP Ecosystem", icon="🔌", url_path="mcp"))
+if flags.get("show_multi_agent_tab"):
+    capability_pages.append(st.Page("views/multi_agent.py", title="Multi-Agent Squad", icon="👥", url_path="multi-agent"))
+if flags.get("show_capstone_tab"):
+    capability_pages.append(st.Page("views/capstone.py", title="Capstone", icon="🏁", url_path="capstone"))
+if flags.get("show_hr_policy_desk_tab"):
+    capability_pages.append(st.Page("views/hr_policy_desk.py", title="HR Policy Desk", icon="🏢", url_path="hr-policy-desk"))
+if flags.get("show_observability_tab"):
+    capability_pages.append(st.Page("views/observability.py", title="Observability", icon="📊", url_path="observability"))
+if flags.get("show_guardrails_tab"):
+    capability_pages.append(st.Page("views/guardrails.py", title="Guardrails & Security", icon="🛡️", url_path="guardrails"))
+if flags.get("show_foundations_lab_tab"):
+    capability_pages.append(st.Page("views/foundations.py", title="Foundations Lab", icon="🧪", url_path="foundations"))
+if flags.get("show_evaluation_tab"):
+    capability_pages.append(st.Page("views/evaluation.py", title="Evaluation", icon="🎯", url_path="evaluation"))
+if flags.get("show_error_analysis_tab"):
+    capability_pages.append(st.Page("views/error_analysis.py", title="Error Analysis", icon="🔬", url_path="error-analysis"))
+if flags.get("show_advanced_search_modes"):
+    capability_pages.append(st.Page("views/search_qa.py", title="Legacy Search & Q&A", icon="🔍", url_path="search"))
+    capability_pages.append(st.Page("views/documents.py", title="Legacy Documents", icon="📄", url_path="legacy-docs"))
 
-    if legacy_pages:
-        legacy_pages.append(st.Page("views/system.py", title="System & Health", icon="🩺", url_path="system"))
-        legacy_pages.append(st.Page("views/documentation.py", title="Documentation", icon="📖", url_path="documentation"))
-        PAGES["Legacy / Dev Tools"] = legacy_pages
+if capability_pages:
+    PAGES["Platform Capabilities"] = capability_pages
+
+# ── Admin & System Tools (Admin Only) ────────────────────────
+if is_admin:
+    PAGES["Administration"] = [
+        st.Page("views/system.py", title="System & Health", icon="🩺", url_path="system"),
+        st.Page("views/documentation.py", title="Documentation", icon="📖", url_path="documentation"),
+    ]
 
 
 # ── Global Sidebar CSS: Professional ChatGPT-like appearance ─
@@ -409,6 +416,8 @@ with st.sidebar:
                     st.session_state["user"] = None
                     st.session_state["current_chat_id"] = None
                     st.session_state["messages"] = []
+                    st.session_state.pop("flags", None)
+                    st.session_state.pop("user_config", None)
                     st.rerun()
 
 

@@ -6,7 +6,7 @@ and admin-only advanced settings (feature flags kill-switch, confidence threshol
 """
 import os
 import streamlit as st
-from rag.feature_flags import DEFAULT_FEATURE_FLAGS
+from rag.feature_flags import DEFAULT_FEATURE_FLAGS, get_active_flags, save_system_flags
 from ui.components import get_current_config
 
 
@@ -72,13 +72,14 @@ def render_config_panel():
 
             st.markdown("---")
             st.markdown("#### 🚩 Enterprise Feature Flags (Kill-Switch)")
-            st.caption("Control visibility of legacy test suites, triage tabs, and observability modules in the UI.")
+            st.caption("Control visibility of capability tabs, agent triage, and observability modules across the workspace.")
 
-            if "flags" not in st.session_state:
-                st.session_state["flags"] = dict(DEFAULT_FEATURE_FLAGS)
+            current_flags = get_active_flags()
+            if "flags" in st.session_state:
+                current_flags.update(st.session_state["flags"])
+            st.session_state["flags"] = current_flags
 
             flag_cols = st.columns(3)
-            current_flags = st.session_state["flags"]
             updated_flags = {}
 
             keys = list(DEFAULT_FEATURE_FLAGS.keys())
@@ -103,9 +104,12 @@ def render_config_panel():
                 cfg["use_reranker"] = use_reranker
                 cfg["use_cache"] = use_cache
                 st.session_state["flags"] = updated_flags
-
-            st.session_state["user_config"] = cfg
-            st.success("✓ Configuration and feature flags saved successfully!")
+                save_system_flags(updated_flags, user_config=cfg)
+                st.session_state["user_config"] = cfg
+                st.success("✓ Workspace configuration and feature flags saved for all users!")
+            else:
+                st.session_state["user_config"] = cfg
+                st.success("✓ Preferences updated for current session!")
             st.rerun()
 
 

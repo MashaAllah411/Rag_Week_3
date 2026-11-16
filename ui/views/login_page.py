@@ -459,8 +459,8 @@ def render_login_page():
                         if user_data:
                             st.session_state["authenticated"] = True
                             st.session_state["user"] = user_data
-                            if "flags" not in st.session_state:
-                                st.session_state["flags"] = get_active_flags()
+                            st.session_state["flags"] = get_active_flags()
+                            st.session_state.pop("user_config", None)
                             st.rerun()
                         else:
                             st.error("Invalid credentials. Use 1-click access below.")
@@ -484,8 +484,8 @@ def render_login_page():
                         if user_data:
                             st.session_state["authenticated"] = True
                             st.session_state["user"] = user_data
-                            if "flags" not in st.session_state:
-                                st.session_state["flags"] = get_active_flags()
+                            st.session_state["flags"] = get_active_flags()
+                            st.session_state.pop("user_config", None)
                             st.rerun()
                 st.html('</div>')
 
@@ -497,8 +497,8 @@ def render_login_page():
                         if user_data:
                             st.session_state["authenticated"] = True
                             st.session_state["user"] = user_data
-                            if "flags" not in st.session_state:
-                                st.session_state["flags"] = get_active_flags()
+                            st.session_state["flags"] = get_active_flags()
+                            st.session_state.pop("user_config", None)
                             st.rerun()
                 st.html('</div>')
 

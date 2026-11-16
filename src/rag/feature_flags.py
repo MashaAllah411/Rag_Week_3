@@ -37,7 +37,38 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
 
 FEATURE_FLAGS = dict(DEFAULT_FEATURE_FLAGS)
 
+import json
+from pathlib import Path
+
+_CONFIG_PATH = Path(__file__).resolve().parents[2] / "data" / "system_config.json"
+
 
 def get_active_flags() -> Dict[str, bool]:
-    """Return a fresh copy of current flags."""
-    return dict(FEATURE_FLAGS)
+    """Return a fresh copy of current flags, updated from persistent storage if available."""
+    flags = dict(DEFAULT_FEATURE_FLAGS)
+    if _CONFIG_PATH.exists():
+        try:
+            with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                if "flags" in saved and isinstance(saved["flags"], dict):
+                    flags.update(saved["flags"])
+        except Exception:
+            pass
+    return flags
+
+
+def save_system_flags(flags: Dict[str, bool], user_config: Any = None) -> None:
+    """Save feature flags and workspace configuration to disk so all users inherit it."""
+    _CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    data = {}
+    if _CONFIG_PATH.exists():
+        try:
+            with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data["flags"] = flags
+    if user_config:
+        data["config"] = user_config
+    with open(_CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)

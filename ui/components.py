@@ -59,10 +59,11 @@ def status_pill(ok: bool, yes: str = "Active", no: str = "Inactive") -> str:
 
 
 def get_current_config() -> dict:
-    """Return user configuration dict from session state or initialize with defaults."""
+    """Return user configuration dict from session state or initialize with defaults & persistent config."""
     import os
+    from pathlib import Path
     if "user_config" not in st.session_state:
-        st.session_state["user_config"] = {
+        config = {
             "search_mode": "hybrid",
             "top_k": 5,
             "llm_provider": os.getenv("LLM_PROVIDER", "groq"),
@@ -72,6 +73,16 @@ def get_current_config() -> dict:
             "use_reranker": True,
             "use_cache": True,
         }
+        cfg_file = Path(__file__).resolve().parent.parent / "data" / "system_config.json"
+        if cfg_file.exists():
+            try:
+                with open(cfg_file, "r", encoding="utf-8") as f:
+                    saved = json.load(f)
+                    if "config" in saved and isinstance(saved["config"], dict):
+                        config.update(saved["config"])
+            except Exception:
+                pass
+        st.session_state["user_config"] = config
     return st.session_state["user_config"]
 
 
