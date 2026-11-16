@@ -34,10 +34,7 @@ def _extract_title_from_messages(messages: list, fallback: str = "New Conversati
 
 def render_chatgpt_timeline_html(stages: list, is_complete: bool = False) -> str:
     """
-    Renders vertical step indicator matching ChatGPT thinking UI:
-      ✓ Completed stages (green checkmark with label and detail badge)
-      ● Active/current stage (pulsing blue dot with animated indicator)
-      ○ Upcoming stages (subtle gray circle)
+    Renders vertical step indicator matching ChatGPT thinking UI without any markdown code fence indentation.
     """
     html_items = []
     for stage in stages:
@@ -46,35 +43,40 @@ def render_chatgpt_timeline_html(stages: list, is_complete: bool = False) -> str
         status = "completed" if is_complete else stage.get("status", "upcoming")
 
         if status == "completed":
-            icon_html = '<span style="color: #10b981; font-weight: 700; font-size: 0.95rem; line-height: 1;">✓</span>'
-            label_style = "color: inherit; font-weight: 500;"
-            detail_html = f'<div style="font-size: 0.77rem; color: #64748b; margin-top: 1px;">{detail}</div>' if detail else ''
+            icon_html = '<span style="color:#10b981;font-weight:700;font-size:0.95rem;line-height:1;">✓</span>'
+            label_style = "color:inherit;font-weight:500;"
+            detail_html = f'<div style="font-size:0.77rem;color:#64748b;margin-top:1px;">{detail}</div>' if detail else ""
         elif status == "running":
             icon_html = '<span class="pulse-indicator"></span>'
-            label_style = "color: #2563eb; font-weight: 600;"
-            detail_html = f'<div style="font-size: 0.77rem; color: #3b82f6; margin-top: 1px;">{detail or "Processing..."}</div>' if detail else '<div style="font-size: 0.77rem; color: #3b82f6; margin-top: 1px;">Processing...</div>'
+            label_style = "color:#2563eb;font-weight:600;"
+            detail_html = f'<div style="font-size:0.77rem;color:#3b82f6;margin-top:1px;">{detail or "Processing..."}</div>'
         else:
-            icon_html = '<span style="color: #94a3b8; font-size: 0.82rem; line-height: 1;">○</span>'
-            label_style = "color: #94a3b8; font-weight: 400;"
-            detail_html = ''
+            icon_html = '<span style="color:#94a3b8;font-size:0.82rem;line-height:1;">○</span>'
+            label_style = "color:#94a3b8;font-weight:400;"
+            detail_html = ""
 
-        html_items.append(f"""
-        <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 7px;">
-            <div style="width: 18px; display: flex; justify-content: center; align-items: center; padding-top: 2px;">
-                {icon_html}
-            </div>
-            <div style="flex: 1;">
-                <div style="{label_style} font-size: 0.88rem;">{name}</div>
-                {detail_html}
-            </div>
-        </div>
-        """)
+        item = (
+            '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">'
+            f'<div style="width:18px;display:flex;justify-content:center;align-items:center;padding-top:2px;">{icon_html}</div>'
+            f'<div style="flex:1;"><div style="{label_style}font-size:0.88rem;">{name}</div>{detail_html}</div>'
+            '</div>'
+        )
+        html_items.append(item)
 
-    return f"""
-    <div class="chatgpt-timeline-wrap" style="font-family: inherit; padding: 6px 2px 8px 2px; line-height: 1.5;">
-        {''.join(html_items)}
-    </div>
-    """
+    return (
+        '<div class="chatgpt-timeline-wrap" style="font-family:inherit;padding:6px 2px 8px 2px;line-height:1.5;">'
+        + "".join(html_items)
+        + '</div>'
+    )
+
+
+def _render_timeline(placeholder, stages: list, is_complete: bool = False) -> None:
+    """Render HTML timeline using st.html (or fallback to markdown without indentation)."""
+    raw_html = render_chatgpt_timeline_html(stages, is_complete=is_complete)
+    if hasattr(placeholder, "html"):
+        placeholder.html(raw_html)
+    else:
+        placeholder.markdown(raw_html, unsafe_allow_html=True)
 
 def _build_display_steps(resp: dict, query: str, cfg: dict, elapsed: float) -> list:
     """Build clean, professional thinking steps matching enterprise conversational AI."""
@@ -453,7 +455,7 @@ def render_chat_interface():
                 lat = msg.get("latency", 0.0)
                 with st.expander(f"💭 Thought for {lat:.1f}s", expanded=False):
                     if msg.get("stages"):
-                        st.markdown(render_chatgpt_timeline_html(msg.get("stages"), is_complete=True), unsafe_allow_html=True)
+                        st.html(render_chatgpt_timeline_html(msg.get("stages"), is_complete=True)) if hasattr(st, "html") else st.markdown(render_chatgpt_timeline_html(msg.get("stages"), is_complete=True), unsafe_allow_html=True)
                     elif msg.get("steps"):
                         for step in msg.get("steps", []):
                             st.markdown(step)
@@ -502,7 +504,7 @@ def render_chat_interface():
             status_container = st.status("Thinking · Understanding your question...", expanded=True)
             with status_container:
                 timeline_ph = st.empty()
-                timeline_ph.markdown(render_chatgpt_timeline_html(stages), unsafe_allow_html=True)
+                _render_timeline(timeline_ph, stages)
 
             answer_ph = st.empty()
             full_streamed_answer = ""
@@ -539,7 +541,7 @@ def render_chat_interface():
                                     stages[i]["status"] = "upcoming"
 
                         status_container.update(label=f"Thinking · {s_label}", expanded=True)
-                        timeline_ph.markdown(render_chatgpt_timeline_html(stages), unsafe_allow_html=True)
+                        _render_timeline(timeline_ph, stages)
 
                     elif ev_type == "token":
                         token_txt = event.get("content", "")
@@ -569,7 +571,7 @@ def render_chat_interface():
                 # Mark all stages completed
                 for s in stages:
                     s["status"] = "completed"
-                timeline_ph.markdown(render_chatgpt_timeline_html(stages, is_complete=True), unsafe_allow_html=True)
+                _render_timeline(timeline_ph, stages, is_complete=True)
                 status_container.update(label=f"Thought for {elapsed:.1f}s", state="complete", expanded=False)
 
                 # Render final markdown without cursor
