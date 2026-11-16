@@ -4,9 +4,50 @@ ui/views/config_panel.py
 Configuration panel supporting basic user settings (search mode, top-k, LLM provider)
 and admin-only advanced settings (feature flags kill-switch, confidence threshold, cache controls).
 """
+import importlib
+import json
 import os
+from pathlib import Path
 import streamlit as st
-from rag.feature_flags import DEFAULT_FEATURE_FLAGS, get_active_flags, save_system_flags
+
+import rag.feature_flags
+if not hasattr(rag.feature_flags, "save_system_flags") or not hasattr(rag.feature_flags, "get_active_flags"):
+    importlib.reload(rag.feature_flags)
+
+try:
+    from rag.feature_flags import DEFAULT_FEATURE_FLAGS, get_active_flags, save_system_flags
+except ImportError:
+    from rag.feature_flags import DEFAULT_FEATURE_FLAGS
+
+    _CONFIG_PATH = Path(__file__).resolve().parents[2] / "data" / "system_config.json"
+
+    def get_active_flags() -> dict:
+        flags = dict(DEFAULT_FEATURE_FLAGS)
+        if _CONFIG_PATH.exists():
+            try:
+                with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+                    saved = json.load(f)
+                    if "flags" in saved and isinstance(saved["flags"], dict):
+                        flags.update(saved["flags"])
+            except Exception:
+                pass
+        return flags
+
+    def save_system_flags(flags: dict, user_config: any = None) -> None:
+        _CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        data = {}
+        if _CONFIG_PATH.exists():
+            try:
+                with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                data = {}
+        data["flags"] = flags
+        if user_config:
+            data["config"] = user_config
+        with open(_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
 from ui.components import get_current_config
 
 

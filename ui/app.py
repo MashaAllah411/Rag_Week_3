@@ -50,6 +50,10 @@ _ensure_backend_started()
 
 from ui.api_client import api
 from ui.components import apply_theme, persist_theme_across_pages, pill
+import importlib
+import rag.feature_flags
+if not hasattr(rag.feature_flags, "save_system_flags") or not hasattr(rag.feature_flags, "get_active_flags"):
+    importlib.reload(rag.feature_flags)
 from rag.feature_flags import get_active_flags
 from rag.storage.chat_store import list_chats, load_chat, delete_chat, create_new_chat, save_chat
 
