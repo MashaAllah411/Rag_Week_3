@@ -138,7 +138,11 @@ with tab_variant_c:
         "ok"
     )
     if st.button("👉 Open Dedicated HR Policy Desk", type="primary"):
-        st.switch_page("views/hr_policy_desk.py")
+        flags = st.session_state.get("flags", {})
+        flags["show_hr_policy_desk_tab"] = True
+        st.session_state["flags"] = flags
+        st.session_state["_target_switch_page"] = "views/hr_policy_desk.py"
+        st.rerun()
     try:
         st.page_link("views/documentation.py", label="Open the Documentation page", icon="📖")
     except Exception:

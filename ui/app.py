@@ -118,6 +118,7 @@ PAGES = {
         st.Page("views/chat_main.py", title="Chat", icon="💬", url_path="chat", default=True),
         st.Page("views/document_panel.py", title="My Documents", icon="📂", url_path="documents-panel"),
         st.Page("views/config_panel.py", title="Configuration", icon="⚙️", url_path="configuration"),
+        st.Page("views/documentation.py", title="Documentation", icon="📖", url_path="documentation"),
     ]
 }
 
@@ -154,7 +155,6 @@ if capability_pages:
 if is_admin:
     PAGES["Administration"] = [
         st.Page("views/system.py", title="System & Health", icon="🩺", url_path="system"),
-        st.Page("views/documentation.py", title="Documentation", icon="📖", url_path="documentation"),
     ]
 
 
@@ -427,4 +427,12 @@ with st.sidebar:
 
 navigation = st.navigation(PAGES, expanded=True)
 persist_theme_across_pages(page.url_path for group in PAGES.values() for page in group)
+
+target_switch = st.session_state.pop("_target_switch_page", None)
+if target_switch:
+    try:
+        st.switch_page(target_switch)
+    except Exception:
+        pass
+
 navigation.run()
